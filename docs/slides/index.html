@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Travel Assistant Assessment Deck</title>
+    <link rel="stylesheet" href="vendor/reveal/dist/reveal.css" />
+    <link rel="stylesheet" href="assets/theme.css" />
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section data-chapter="problem">
+          <div class="frame hero">
+            <div class="hero-grid">
+              <div class="hero-copy">
+                <span class="eyebrow">Travel Assistant • LangGraph • Phoenix</span>
+                <h1>Travel Assistant</h1>
+                <p class="lead">
+                  A travel assistant that helps plan what to do, answer current travel questions,
+                  and show how it arrived at each answer.
+                </p>
+                <div class="chip-row">
+                  <div class="chip">
+                    <small>Built From</small>
+                    <span>A starter FastAPI + LangGraph repo</span>
+                  </div>
+                  <div class="chip">
+                    <small>Example Question</small>
+                    <span>I have one day in Chicago and love architecture and river walks. What should I do?</span>
+                  </div>
+                  <div class="chip">
+                    <small>This Talk Follows</small>
+                    <span>one question → one runtime → one trace → one evaluation</span>
+                  </div>
+                </div>
+              </div>
+              <div class="hero-route">
+                <div class="route-intro">
+                  <span class="route-label-pill">What The Product Does</span>
+                  <h3>One assistant, three clear behaviors</h3>
+                </div>
+                <div class="stack hero-points">
+                  <div class="panel story-prompt">
+                    <small class="label">Planning</small>
+                    <h4>Plan what to do</h4>
+                    <p>Recommend attractions, neighborhoods, museums, parks, and food options for a destination.</p>
+                  </div>
+                  <div class="panel story-prompt">
+                    <small class="label">Current Info</small>
+                    <h4>Answer fresh questions</h4>
+                    <p>Handle weather, advisories, flight delays, and other information that changes over time.</p>
+                  </div>
+                  <div class="panel story-prompt">
+                    <small class="label">Explainability</small>
+                    <h4>Show its work</h4>
+                    <p>The same request later appears as a trace and as an evaluation record in Phoenix.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:00. Start with the product and one concrete question. Do not mention metrics yet.
+          </aside>
+        </section>
+
+        <section data-chapter="problem">
+          <div class="frame">
+            <div class="heading-row">
+              <div>
+                <span class="eyebrow">Problem</span>
+                <h2>Starting Point</h2>
+              </div>
+              <p class="support">
+                The starter repo could answer a question with a LangGraph loop, but it could not
+                explain or evaluate its behavior.
+              </p>
+            </div>
+            <div class="split">
+              <div class="panel before">
+                <small class="label">What The Starter Did</small>
+                <pre class="tree">se-interview/
+├── agent.py
+├── api.py
+├── pyproject.toml
+└── README.md</pre>
+                <ul class="bullet-list compact">
+                  <li>Accepted a question through an API</li>
+                  <li>Ran a small LangGraph loop</li>
+                  <li>Used one generic search tool</li>
+                </ul>
+              </div>
+              <div class="panel after">
+                <small class="label">What It Could Not Yet Do</small>
+                <ul class="bullet-list compact">
+                  <li>Specialize for travel planning</li>
+                  <li>Show LLM and tool steps in Phoenix</li>
+                  <li>Score real behavior on real traces</li>
+                  <li>Tell a credible production story</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:05. Keep this grounded in what the repo already could and could not do.
+          </aside>
+        </section>
+
+        <section data-chapter="build" data-intro-shift="true">
+          <div class="frame intro-shift-frame">
+            <div class="heading-row intro-heading">
+              <div>
+                <span class="eyebrow">Build</span>
+                <h2>What Changed</h2>
+              </div>
+              <p class="support">
+                To turn the starter into a useful and explainable travel assistant, four concrete
+                capabilities had to be added.
+              </p>
+            </div>
+            <div class="intro-body">
+              <div class="grid grid-2x2">
+                <div class="move-card fragment layer-rise" data-fragment-index="1">
+                  <div class="move-index">01</div>
+                  <h4>Planning Tool</h4>
+                  <p>Add `search_attractions` so destination questions return organized travel evidence.</p>
+                </div>
+                <div class="move-card fragment layer-rise" data-fragment-index="2">
+                  <div class="move-index">02</div>
+                  <h4>Tracing</h4>
+                  <p>Instrument the app so one request becomes one trace with model and tool spans.</p>
+                </div>
+                <div class="move-card fragment layer-rise" data-fragment-index="3">
+                  <div class="move-index">03</div>
+                  <h4>Evaluations</h4>
+                  <p>Score those traces for user frustration and tool-routing correctness.</p>
+                </div>
+                <div class="move-card fragment layer-rise" data-fragment-index="4">
+                  <div class="move-index">04</div>
+                  <h4>Production Shape</h4>
+                  <p>Add tests, Docker, scripts, docs, and artifacts so the repo looks like a small real project.</p>
+                </div>
+              </div>
+            </div>
+            <span class="intro-trigger fragment" data-fragment-index="0" aria-hidden="true"></span>
+          </div>
+          <aside class="notes">
+            Target time: 1:05. This is the build-chapter introduction and the first intro-shift example.
+          </aside>
+        </section>
+
+        <section data-chapter="build">
+          <div class="frame">
+            <div class="heading-row">
+              <div>
+                <span class="eyebrow">Build</span>
+                <h2>Runtime Architecture</h2>
+              </div>
+              <p class="support">
+                One Chicago question enters the API, the graph decides which tool to use, the tool returns evidence, and the model turns that evidence into the final answer.
+              </p>
+            </div>
+            <div class="example-card backbone-callout">
+              <small class="label">Backbone Request</small>
+              <p>“I have one day in Chicago and love architecture and river walks. What should I do?”</p>
+            </div>
+            <div class="system-diagram runtime-mermaid-shell top-gap">
+              <div class="runtime-legend">
+                <span class="legend-item legend-main">primary answer path</span>
+                <span class="legend-item legend-alt">fresh-facts fallback</span>
+              </div>
+              <pre class="mermaid mermaid-runtime">
+flowchart LR
+  user["User"]
+  api["Chat API"]
+  llm["LLM Call"]
+  route{"Tool Router"}
+  attractions["Attractions Tool"]
+  web["Web Tool"]
+  final["Final Answer"]
+  result["User Response"]
+  meta["Metadata"]
+
+  user --> api --> llm --> route
+  meta -.-> llm
+  route --> attractions --> final --> result
+  route --> web --> final
+
+  classDef neutral fill:#fffaf1,stroke:#e4ddd1,stroke-width:1.5px,color:#18221e;
+  classDef primary fill:#d9efeb,stroke:#0f7068,stroke-width:2px,color:#18221e;
+  classDef secondary fill:#f8f1e6,stroke:#b3862f,stroke-width:2px,color:#18221e;
+  classDef meta fill:#f8e5d8,stroke:#ca6d3a,stroke-width:1.5px,color:#18221e;
+  class user,api,llm,route,final,result neutral;
+  class attractions primary;
+  class web secondary;
+  class meta meta;
+
+  linkStyle 0,1,2,4,5,6 stroke:#0f7068,stroke-width:3.5px;
+  linkStyle 3 stroke:#ca6d3a,stroke-width:2.2px,stroke-dasharray:5 4;
+  linkStyle 7,8 stroke:#b3862f,stroke-width:3px;
+              </pre>
+              <div class="runtime-detail-grid">
+                <div class="runtime-detail-card">
+                  <small class="label">USR → API</small>
+                  <p>The Chicago planning question enters <code>/chat</code> and starts the request lifecycle.</p>
+                </div>
+                <div class="runtime-detail-card">
+                  <small class="label">META → LLM</small>
+                  <p><code>session_id</code>, route metadata, and tracing context are attached before the model decides what to do.</p>
+                </div>
+                <div class="runtime-detail-card">
+                  <small class="label">ROUTE → ATTR / WEB</small>
+                  <p>Planning prompts should trigger the attractions tool; fresh-facts prompts should use the web branch instead.</p>
+                </div>
+                <div class="runtime-detail-card">
+                  <small class="label">ANS → RESP</small>
+                  <p>The model reads tool output, synthesizes the answer, and returns a user-facing travel recommendation.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:40. This is the most important slide in the deck. Everything later should point back to this flow.
+          </aside>
+        </section>
+
+        <section data-chapter="build">
+          <div class="frame">
+            <div class="heading-row">
+              <div>
+                <span class="eyebrow">Build</span>
+                <h2>Graph Decision Loop</h2>
+              </div>
+              <p class="support">
+                Inside the runtime architecture, the LangGraph loop keeps calling the model until it stops requesting tools.
+              </p>
+            </div>
+            <div class="loop-slide-layout">
+              <div class="loop-main-grid">
+                <div class="diagram-card loop-bottom-card">
+                  <small class="label">Decision Flow</small>
+                  <div class="loop-graphic-stage">
+                    <div class="runtime-detail-card loop-stage-card stage-top">
+                      <small class="label">LLM Call</small>
+                      <p>The first model call decides whether a tool is needed.</p>
+                    </div>
+                    <svg class="loop-svg" viewBox="0 0 1200 420" aria-label="LangGraph decision loop">
+                      <defs>
+                        <marker id="loop-arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                          <path d="M 0 0 L 10 5 L 0 10 z" fill="#253535"></path>
+                        </marker>
+                        <marker id="loop-arrowhead-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                          <path d="M 0 0 L 10 5 L 0 10 z" fill="#14807a"></path>
+                        </marker>
+                      </defs>
+                      <g class="loop-ring">
+                        <path class="loop-arc-top" d="M 460 215 C 565 128, 775 128, 890 215" marker-end="url(#loop-arrowhead)"></path>
+                        <path class="loop-arc-bottom" d="M 890 235 C 772 322, 562 322, 460 235" marker-end="url(#loop-arrowhead)"></path>
+                      </g>
+                      <path class="loop-stop-path" d="M 458 252 C 585 342, 790 365, 980 348" marker-end="url(#loop-arrowhead)"></path>
+                      <path class="loop-start-path" d="M 190 225 L 338 225" marker-end="url(#loop-arrowhead-teal)"></path>
+
+                      <g class="loop-node-svg node-start">
+                        <rect x="80" y="176" width="110" height="96" rx="28"></rect>
+                        <text x="135" y="225">START</text>
+                      </g>
+                      <g class="loop-node-svg node-llm">
+                        <rect x="338" y="156" width="122" height="132" rx="34"></rect>
+                        <text x="399" y="225">LLM_CALL</text>
+                      </g>
+                      <g class="loop-node-svg node-tool">
+                        <rect x="890" y="150" width="220" height="108" rx="30"></rect>
+                        <text x="1000" y="206">TOOL_NODE</text>
+                      </g>
+                      <g class="loop-node-svg node-end">
+                        <circle cx="1008" cy="352" r="40"></circle>
+                        <text x="1008" y="360">END</text>
+                      </g>
+
+                      <g class="loop-edge-labels">
+                        <text x="673" y="116">TOOL REQUESTED</text>
+                        <text x="672" y="332">JSON RESULT WRITTEN BACK</text>
+                        <text x="764" y="394">STOP</text>
+                      </g>
+                    </svg>
+                    <div class="runtime-detail-card loop-stage-card stage-left">
+                      <small class="label">Tool Node</small>
+                      <p>If a tool is called, its JSON output is written back into the conversation.</p>
+                    </div>
+                    <div class="runtime-detail-card loop-stage-card stage-right">
+                      <small class="label">End</small>
+                      <p>The loop ends only when the model stops emitting tool calls.</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="code-card loop-code-card loop-code-wide">
+                  <small class="label">LangGraph</small>
+                  <pre class="loop-code-block">graph_builder.add_edge(START, "llm_call")
+graph_builder.add_conditional_edges(
+    "llm_call",
+    should_continue,
+    ["tool_node", END],
+)
+graph_builder.add_edge("tool_node", "llm_call")</pre>
+                  <div class="code-foot">
+                    Small topology, explicit routing, readable traces.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:15. Explain this as the decision engine inside the larger runtime flow.
+          </aside>
+        </section>
+
+        <section data-chapter="build">
+          <div class="frame">
+            <div class="heading-row">
+              <div>
+                <span class="eyebrow">Build</span>
+                <h2>Tool Contracts</h2>
+              </div>
+              <p class="support">
+                The assistant only needs three behaviors: planning, fresh facts, and an honest answer when the request requires a transaction.
+              </p>
+            </div>
+            <div class="stack intent-stack">
+              <div class="panel intent-row fragment layer-rise" data-fragment-index="0">
+                <div>
+                  <small class="label">Trip Planning</small>
+                  <h4>“What should I do in Chicago?”</h4>
+                </div>
+                <p>Use <code>search_attractions</code> to gather organized destination evidence.</p>
+              </div>
+              <div class="panel intent-row fragment layer-rise" data-fragment-index="1">
+                <div>
+                  <small class="label">Current Info</small>
+                  <h4>“What is the weather in Lisbon?”</h4>
+                </div>
+                <p>Use <code>search_web</code> when the answer depends on changing information.</p>
+              </div>
+              <div class="panel intent-row fragment layer-rise" data-fragment-index="2">
+                <div>
+                  <small class="label">Unsupported Action</small>
+                  <h4>“Book me a hotel in Rome.”</h4>
+                </div>
+                <p>Do not pretend to transact. State the limit clearly and offer planning help instead.</p>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:15. Tie each system behavior to a recognizable user intent.
+          </aside>
+        </section>
+
+        <section data-chapter="build">
+          <div class="frame">
+            <div class="heading-row">
+              <div>
+                <span class="eyebrow">Build</span>
+                <h2>Structured Tool Output</h2>
+              </div>
+              <p class="support">
+                The planning tool returns organized evidence, not raw search snippets. That makes the model easier to guide and the behavior easier to evaluate.
+              </p>
+            </div>
+            <div class="split">
+              <div class="panel">
+                <small class="label">Raw Search Snippet</small>
+                <p class="tiny-mono">
+                  “Chicago Architecture River Cruise... unique perspective from the river... city’s
+                  architectural history...”
+                </p>
+                <p class="tiny-mono">
+                  “Chicago Riverwalk... views of the city’s architecture... guided tours...”
+                </p>
+              </div>
+              <div class="code-card">
+                <small class="label">Normalized Result</small>
+                <pre><code>AttractionResult(
+  name,
+  category,
+  summary,
+  estimated_cost,
+  rationale,
+  source_url,
+)</code></pre>
+              </div>
+            </div>
+            <div class="quote-band fragment glow-in top-gap" data-fragment-index="0">
+              <span>Why It Helps</span>
+              <p>The model gets cleaner evidence, the final answer can cite sources, and later evaluations can judge tool usage with stable fields.</p>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:10. Keep this focused on why structured evidence matters, not just on the schema itself.
+          </aside>
+        </section>
+
+        <section data-chapter="observe" data-intro-shift="true">
+          <div class="frame chapter intro-shift-frame intro-shift-frame--chapter">
+            <div class="chapter-layout">
+              <div class="chapter-copy intro-heading">
+                <span class="chapter-kicker">Observe</span>
+                <h2>Observe</h2>
+                <p>
+                  Now that the app can answer a question, the next question is: how do we see what it actually did?
+                </p>
+              </div>
+              <div class="chapter-graphic intro-body">
+                <svg class="chapter-route" viewBox="0 0 420 320" aria-hidden="true">
+                  <path class="route-track" d="M46 248C118 248 128 110 204 110C280 110 292 236 370 236"></path>
+                  <path class="route-live" d="M46 248C118 248 128 110 204 110C280 110 292 236 370 236"></path>
+                  <circle class="route-stop a" cx="46" cy="248" r="12"></circle>
+                  <circle class="route-stop b" cx="204" cy="110" r="12"></circle>
+                  <circle class="route-stop c" cx="370" cy="236" r="12"></circle>
+                </svg>
+                <div class="route-badge badge-a">request</div>
+                <div class="route-badge badge-b">trace</div>
+                <div class="route-badge badge-c">spans</div>
+              </div>
+            </div>
+            <span class="intro-trigger fragment" data-fragment-index="0" aria-hidden="true"></span>
+          </div>
+          <aside class="notes">
+            Target time: 0:35. This section is about turning the runtime flow into something inspectable.
+          </aside>
+        </section>
+
+        <section data-chapter="observe">
+          <div class="frame">
+            <div class="heading-row">
+              <div>
+                <span class="eyebrow">Observe</span>
+                <h2>One Request As A Trace</h2>
+              </div>
+              <p class="support">
+                This is the same Chicago request again, but now every model step and tool step is visible as part of one trace.
+              </p>
+            </div>
+            <div class="example-card backbone-callout">
+              <small class="label">Same Backbone Request</small>
+              <p>“I have one day in Chicago and love architecture and river walks. What should I do?”</p>
+            </div>
+            <div class="trace-board top-gap">
+              <div class="trace-root">
+                <small>Root Trace</small>
+                <h4>Chicago Request</h4>
+                <p>The full request lifecycle, from question to final answer.</p>
+              </div>
+              <div class="trace-branch branch-grow fragment" data-fragment-index="1">
+                <div class="trace-span fragment slide-in" data-fragment-index="1">
+                  <strong>LLM span</strong>
+                  <span>`ChatOpenAI` decides that this is a planning question.</span>
+                </div>
+                <div class="trace-span fragment slide-in" data-fragment-index="2">
+                  <strong>TOOL span</strong>
+                  <span>`search_attractions` returns structured Chicago options.</span>
+                </div>
+                <div class="trace-span fragment slide-in" data-fragment-index="3">
+                  <strong>LLM span</strong>
+                  <span>The final answer cites the tool results and writes the day plan.</span>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-3 top-gap">
+              <div class="mini-panel fragment layer-rise" data-fragment-index="4">
+                <strong>Trace</strong>
+                <span>One user request and all of the work it triggered.</span>
+              </div>
+              <div class="mini-panel fragment layer-rise" data-fragment-index="5">
+                <strong>Span</strong>
+                <span>One measured step inside that request.</span>
+              </div>
+              <div class="mini-panel fragment layer-rise" data-fragment-index="6">
+                <strong>Why It Matters</strong>
+                <span>Failures become localizable to a specific step in the flow.</span>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:20. This should feel like a zoom-in on the runtime architecture slide, not a new topic.
+          </aside>
+        </section>
+
+        <section data-chapter="observe">
+          <div class="frame">
+            <div class="heading-row">
+              <div>
+                <span class="eyebrow">Observe</span>
+                <h2>Trace Evidence</h2>
+              </div>
+              <p class="support">
+                After running 10 questions through the app, this is what Phoenix captured.
+              </p>
+            </div>
+            <div class="metric-ribbon">
+              <div class="metric-card fragment layer-rise" data-fragment-index="0">
+                <strong>10</strong>
+                <span>root traces</span>
+              </div>
+              <div class="metric-card fragment layer-rise" data-fragment-index="1">
+                <strong>137</strong>
+                <span>total spans</span>
+              </div>
+              <div class="metric-card fragment layer-rise" data-fragment-index="2">
+                <strong>18</strong>
+                <span>LLM spans</span>
+              </div>
+            </div>
+            <div class="split top-gap">
+              <div class="panel fragment layer-rise" data-fragment-index="3">
+                <small class="label">What Those Numbers Mean</small>
+                <ul class="bullet-list compact">
+                  <li>10 separate user requests were captured as top-level traces.</li>
+                  <li>137 steps were captured across graph, LLM, and tool behavior.</li>
+                  <li>Those traces are what later evaluation slides operate on.</li>
+                </ul>
+              </div>
+              <div class="panel fragment layer-rise" data-fragment-index="4">
+                <small class="label">Example Root Span</small>
+                <ul class="bullet-list compact">
+                  <li><strong>name:</strong> `LangGraph`</li>
+                  <li><strong>kind:</strong> `CHAIN`</li>
+                  <li><strong>route:</strong> `/chat`</li>
+                  <li><strong>project:</strong> `travel-assistant-assessment`</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:10. This is where the metrics finally become meaningful.
+          </aside>
+        </section>
+
+        <section data-chapter="evaluate" data-intro-shift="true">
+          <div class="frame chapter alt intro-shift-frame intro-shift-frame--chapter">
+            <div class="chapter-layout">
+              <div class="chapter-copy intro-heading">
+                <span class="chapter-kicker">Evaluate</span>
+                <h2>Evaluate</h2>
+                <p>
+                  Once we had traces, we could score behavior instead of judging the system by feel.
+                </p>
+              </div>
+              <div class="chapter-graphic intro-body">
+                <svg class="chapter-route" viewBox="0 0 420 320" aria-hidden="true">
+                  <path class="route-track" d="M50 84C128 84 138 166 212 166C286 166 294 242 370 242"></path>
+                  <path class="route-live" d="M50 84C128 84 138 166 212 166C286 166 294 242 370 242"></path>
+                  <circle class="route-stop a" cx="50" cy="84" r="12"></circle>
+                  <circle class="route-stop b" cx="212" cy="166" r="12"></circle>
+                  <circle class="route-stop c" cx="370" cy="242" r="12"></circle>
+                </svg>
+                <div class="route-badge badge-a">trace</div>
+                <div class="route-badge badge-b">score</div>
+                <div class="route-badge badge-c">dataset</div>
+              </div>
+            </div>
+            <span class="intro-trigger fragment" data-fragment-index="0" aria-hidden="true"></span>
+          </div>
+          <aside class="notes">
+            Target time: 0:35. This section is about turning trace data into feedback.
+          </aside>
+        </section>
+
+        <section data-chapter="evaluate">
+          <div class="frame">
+            <div class="heading-row">
+              <div>
+                <span class="eyebrow">Evaluate</span>
+                <h2>Test Corpus</h2>
+              </div>
+              <p class="support">
+                We intentionally tested three kinds of user needs: planning, current information, and unsupported booking.
+              </p>
+            </div>
+            <div class="split">
+              <div class="panel">
+                <small class="label">Scenario Mix</small>
+                <div class="bar-group">
+                  <div class="bar-row fragment route-draw" data-fragment-index="0">
+                    <span>Travel planning</span>
+                    <div class="bar"><div class="fill teal" style="width: 100%;"></div></div>
+                    <strong>5</strong>
+                  </div>
+                  <div class="bar-row fragment route-draw" data-fragment-index="1">
+                    <span>Current info</span>
+                    <div class="bar"><div class="fill warm" style="width: 60%;"></div></div>
+                    <strong>3</strong>
+                  </div>
+                  <div class="bar-row fragment route-draw" data-fragment-index="2">
+                    <span>Unsupported booking</span>
+                    <div class="bar"><div class="fill rust" style="width: 40%;"></div></div>
+                    <strong>2</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="stack">
+                <div class="example-card fragment layer-rise" data-fragment-index="3">
+                  <small class="label">Planning</small>
+                  <p>“I have one day in Chicago and love architecture and river walks. What should I do?”</p>
+                </div>
+                <div class="example-card fragment layer-rise" data-fragment-index="4">
+                  <small class="label">Current Info</small>
+                  <p>“What is the weather forecast in Lisbon for the next few days?”</p>
+                </div>
+                <div class="example-card fragment layer-rise" data-fragment-index="5">
+                  <small class="label">Unsupported</small>
+                  <p>“Just book me a hotel in Rome for next Friday.”</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:05. The corpus is intentionally mixed so the evaluations see both good and bad outcomes.
+          </aside>
+        </section>
+
+        <section data-chapter="evaluate">
+          <div class="frame">
+            <div class="heading-row">
+              <div>
+                <span class="eyebrow">Evaluate</span>
+                <h2>Evaluation Pipeline</h2>
+              </div>
+              <p class="support">
+                The evaluation pipeline is simple: export traces, join them with the test corpus, score them, write the results back, and collect failures.
+              </p>
+            </div>
+            <div class="system-diagram eval-diagram">
+              <svg class="diagram-lines" viewBox="0 0 1400 420" aria-hidden="true">
+                <path class="diagram-path fragment route-draw" data-fragment-index="0" d="M116 120H324"></path>
+                <path class="diagram-path fragment route-draw" data-fragment-index="1" d="M448 120H656"></path>
+                <path class="diagram-path fragment route-draw" data-fragment-index="2" d="M780 120H988"></path>
+                <path class="diagram-path fragment route-draw" data-fragment-index="3" d="M1112 120H1290"></path>
+                <path class="diagram-path fragment route-draw" data-fragment-index="4" d="M1178 220C1178 286 1070 324 900 324H726"></path>
+              </svg>
+              <div class="diagram-node x1">
+                <small>Input</small>
+                <h4>Exported Traces</h4>
+                <p>Real request traces pulled from Phoenix.</p>
+              </div>
+              <div class="diagram-node x2">
+                <small>Join</small>
+                <h4>Test Corpus</h4>
+                <p>Scenario type and expected primary tool.</p>
+              </div>
+              <div class="diagram-node x3">
+                <small>Score</small>
+                <h4>Two Evaluations</h4>
+                <p>User frustration and first-tool correctness.</p>
+              </div>
+              <div class="diagram-node x4">
+                <small>Write Back</small>
+                <h4>Phoenix Annotations</h4>
+                <p>Attach scores and labels to the relevant spans.</p>
+              </div>
+              <div class="diagram-node loop-box">
+                <small>Collect Failures</small>
+                <h4>Dataset</h4>
+                <p>Store frustrated interactions for later inspection.</p>
+              </div>
+              <div class="eval-token fragment token-travel" data-fragment-index="4"></div>
+            </div>
+            <div class="mini-panel top-gap fragment layer-rise" data-fragment-index="5">
+              <strong>Custom metric</strong>
+              <span>Did the first observed tool match the tool this prompt type was supposed to trigger?</span>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:20. Keep this about flow, not about implementation details.
+          </aside>
+        </section>
+
+        <section data-chapter="evaluate">
+          <div class="frame">
+            <div class="heading-row">
+              <div>
+                <span class="eyebrow">Evaluate</span>
+                <h2>User Frustration</h2>
+              </div>
+              <p class="support">
+                The frustration evaluation surfaced a product lesson: honest limits still create bad experiences when the user wants a capability the product does not have.
+              </p>
+            </div>
+            <div class="metric-ribbon">
+              <div class="metric-card warm fragment layer-rise" data-fragment-index="0">
+                <strong>2 / 10</strong>
+                <span>frustrated interactions</span>
+              </div>
+              <div class="metric-card fragment layer-rise" data-fragment-index="1">
+                <strong>8 / 10</strong>
+                <span>not frustrated</span>
+              </div>
+              <div class="metric-card deep fragment layer-rise" data-fragment-index="2">
+                <strong>1</strong>
+                <span>failure dataset created in Phoenix</span>
+              </div>
+            </div>
+            <div class="split top-gap">
+              <div class="quote-card fragment layer-rise" data-fragment-index="3">
+                <small class="label">Non-Frustrated Example</small>
+                <p>“I have one day in Chicago and love architecture and river walks. What should I do?”</p>
+                <span class="status ok">label: ok</span>
+              </div>
+              <div class="quote-card fragment layer-rise" data-fragment-index="4">
+                <small class="label">Frustrated Example</small>
+                <p>“This is the second time I'm asking. Just book me a hotel in Rome for next Friday.”</p>
+                <span class="status bad">label: frustrated</span>
+              </div>
+            </div>
+            <div class="quote-band fragment glow-in" data-fragment-index="5">
+              <span>Product Lesson</span>
+              <p>Not hallucinating bookings is correct behavior, but it does not make the experience satisfying for users who want booking help.</p>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:20. Make the product takeaway explicit.
+          </aside>
+        </section>
+
+        <section data-chapter="evaluate">
+          <div class="frame">
+            <div class="heading-row">
+              <div>
+                <span class="eyebrow">Evaluate</span>
+                <h2>Tool Routing</h2>
+              </div>
+              <p class="support">
+                The custom metric answers a simple question: did the system choose the right tool first?
+              </p>
+            </div>
+            <div class="split">
+              <div class="panel">
+                <small class="label">Result</small>
+                <div class="score-board">
+                  <div class="score-good fragment layer-rise" data-fragment-index="0">
+                    <strong>9 / 10</strong>
+                    <span>correct first tool</span>
+                  </div>
+                  <div class="score-bad fragment layer-rise" data-fragment-index="1">
+                    <strong>1 / 10</strong>
+                    <span>wrong first tool</span>
+                  </div>
+                </div>
+                <div class="bar-group top-gap-sm">
+                  <div class="bar-row fragment route-draw" data-fragment-index="2">
+                    <span>`search_attractions`</span>
+                    <div class="bar"><div class="fill teal" style="width: 90%;"></div></div>
+                    <strong>travel planning</strong>
+                  </div>
+                  <div class="bar-row fragment route-draw" data-fragment-index="3">
+                    <span>`search_web`</span>
+                    <div class="bar"><div class="fill warm" style="width: 60%;"></div></div>
+                    <strong>current info</strong>
+                  </div>
+                  <div class="bar-row fragment route-draw" data-fragment-index="4">
+                    <span>`none`</span>
+                    <div class="bar"><div class="fill rust" style="width: 40%;"></div></div>
+                    <strong>unsupported booking</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="panel fragment layer-rise" data-fragment-index="5">
+                <small class="label">The Missed Case</small>
+                <p class="tight">“What are some nightlife areas worth visiting in Tokyo this weekend?”</p>
+                <ul class="bullet-list compact">
+                  <li><strong>Expected first:</strong> `search_attractions`</li>
+                  <li><strong>Observed first:</strong> `search_web`</li>
+                  <li><strong>Observed later:</strong> `search_attractions`</li>
+                </ul>
+                <p class="tiny-note">The “this weekend” phrasing pulled the system toward recency before destination planning.</p>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:15. This is the most direct evaluation of the new routing behavior.
+          </aside>
+        </section>
+
+        <section data-chapter="evaluate">
+          <div class="frame">
+            <div class="heading-row">
+              <div>
+                <span class="eyebrow">Evaluate</span>
+                <h2>Debugging Example</h2>
+              </div>
+              <p class="support">
+                The Tokyo miss shows why traces matter: the issue was not “the answer looked bad,” but “the system made its decisions in the wrong order.”
+              </p>
+            </div>
+            <div class="timeline">
+              <div class="time-step fragment layer-rise" data-fragment-index="0">
+                <small>Prompt</small>
+                <h4>Mixed Intent</h4>
+                <p>The request asks for nightlife planning and includes a freshness cue: “this weekend.”</p>
+              </div>
+              <div class="time-step fragment layer-rise" data-fragment-index="1">
+                <small>Trace</small>
+                <h4>Wrong First Tool</h4>
+                <p>The first tool call was `search_web`, not the planning tool.</p>
+              </div>
+              <div class="time-step fragment layer-rise" data-fragment-index="2">
+                <small>Diagnosis</small>
+                <h4>Policy Gap</h4>
+                <p>The prompt policy did not say how to prioritize mixed planning + freshness requests.</p>
+              </div>
+              <div class="time-step fragment layer-rise" data-fragment-index="3">
+                <small>Fix</small>
+                <h4>Route Planning First</h4>
+                <p>Prefer destination planning first, then enrich with fresh information only when needed.</p>
+              </div>
+            </div>
+            <div class="quote-band fragment glow-in" data-fragment-index="4">
+              <span>Why This Matters</span>
+              <p>Tracing turns a vague bad result into a precise system behavior that can be improved directly.</p>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:10. This is the strongest example of observability leading to a concrete improvement.
+          </aside>
+        </section>
+
+        <section data-chapter="scale" data-intro-shift="true">
+          <div class="frame chapter deep intro-shift-frame intro-shift-frame--chapter">
+            <div class="chapter-layout">
+              <div class="chapter-copy intro-heading">
+                <span class="chapter-kicker">Scale</span>
+                <h2>Scale</h2>
+                <p>
+                  If this stopped being a laptop demo, the question would become: how do we keep the same behavior, evidence, and feedback loops in production?
+                </p>
+              </div>
+              <div class="chapter-graphic intro-body">
+                <svg class="chapter-route" viewBox="0 0 420 320" aria-hidden="true">
+                  <path class="route-track" d="M50 248C126 248 136 106 212 106C286 106 300 198 372 198"></path>
+                  <path class="route-live" d="M50 248C126 248 136 106 212 106C286 106 300 198 372 198"></path>
+                  <circle class="route-stop a" cx="50" cy="248" r="12"></circle>
+                  <circle class="route-stop b" cx="212" cy="106" r="12"></circle>
+                  <circle class="route-stop c" cx="372" cy="198" r="12"></circle>
+                </svg>
+                <div class="route-badge badge-a">serve</div>
+                <div class="route-badge badge-b">observe</div>
+                <div class="route-badge badge-c">scale</div>
+              </div>
+            </div>
+            <span class="intro-trigger fragment" data-fragment-index="0" aria-hidden="true"></span>
+          </div>
+          <aside class="notes">
+            Target time: 0:35. This introduces the production conversation after the audience already understands the runtime.
+          </aside>
+        </section>
+
+        <section data-chapter="scale">
+          <div class="frame">
+            <div class="heading-row">
+              <div>
+                <span class="eyebrow">Scale</span>
+                <h2>Production Architecture</h2>
+              </div>
+              <p class="support">
+                The production view keeps the same responsibilities as the local demo, but separates serving, dependencies, observability, evaluation, and storage.
+              </p>
+            </div>
+            <div class="system-diagram architecture-diagram">
+              <svg class="diagram-lines" viewBox="0 0 1400 420" aria-hidden="true">
+                <path class="diagram-path fragment route-draw" data-fragment-index="0" d="M116 110H278"></path>
+                <path class="diagram-path fragment route-draw" data-fragment-index="1" d="M416 110H592"></path>
+                <path class="diagram-path fragment route-draw" data-fragment-index="2" d="M750 110H936"></path>
+                <path class="diagram-path fragment route-draw" data-fragment-index="2" d="M750 230H936"></path>
+                <path class="diagram-path fragment route-draw" data-fragment-index="3" d="M1086 90H1258"></path>
+                <path class="diagram-path fragment route-draw" data-fragment-index="3" d="M1086 160H1258"></path>
+                <path class="diagram-path fragment route-draw" data-fragment-index="3" d="M1086 250H1258"></path>
+              </svg>
+              <div class="diagram-node x1">
+                <small>Edge</small>
+                <h4>Client / Demo UI</h4>
+                <p>User-facing requests</p>
+              </div>
+              <div class="diagram-node x2">
+                <small>Edge</small>
+                <h4>Load Balancer</h4>
+                <p>Distribute requests across stateless app instances.</p>
+              </div>
+              <div class="diagram-node x3">
+                <small>Serve</small>
+                <h4>FastAPI + LangGraph Pods</h4>
+                <p>The same request flow as the runtime architecture slide, now scaled out.</p>
+              </div>
+              <div class="diagram-node cache">
+                <small>State</small>
+                <h4>Redis Cache</h4>
+                <p>Repeated lookups and request/session support.</p>
+              </div>
+              <div class="diagram-node provider-top">
+                <small>Dependency</small>
+                <h4>LLM Provider</h4>
+                <p>Managed model endpoint for synthesis.</p>
+              </div>
+              <div class="diagram-node provider-bottom">
+                <small>Dependency</small>
+                <h4>Search Provider</h4>
+                <p>Current facts and travel-search retrieval.</p>
+              </div>
+              <div class="diagram-node obs-top">
+                <small>Observe</small>
+                <h4>OTLP Collector</h4>
+                <p>Receive traces from the serving layer.</p>
+              </div>
+              <div class="diagram-node obs-mid">
+                <small>Observe</small>
+                <h4>Phoenix</h4>
+                <p>Trace UI, annotations, and failure analysis.</p>
+              </div>
+              <div class="diagram-node obs-bottom">
+                <small>Learn</small>
+                <h4>Async Eval + Storage</h4>
+                <p>Workers, metadata tables, and exported artifacts.</p>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:35. Make clear that this is the scaled version of the runtime already explained earlier.
+          </aside>
+        </section>
+
+        <section data-chapter="scale">
+          <div class="frame">
+            <div class="heading-row">
+              <div>
+                <span class="eyebrow">Scale</span>
+                <h2>Operational Tradeoffs</h2>
+              </div>
+              <p class="support">
+                Once the system is running as a service, the main operating concerns are latency, cost, and reliability.
+              </p>
+            </div>
+            <div class="grid grid-3">
+              <div class="panel fragment layer-rise" data-fragment-index="0">
+                <small class="label">Latency</small>
+                <ul class="bullet-list compact">
+                  <li>Cache repeated planning and lookup results.</li>
+                  <li>Keep the graph loop short and predictable.</li>
+                  <li>Add timeouts around external calls.</li>
+                </ul>
+              </div>
+              <div class="panel fragment layer-rise" data-fragment-index="1">
+                <small class="label">Cost</small>
+                <ul class="bullet-list compact">
+                  <li>Keep evaluation off the request path.</li>
+                  <li>Sample traces in production when needed.</li>
+                  <li>Use the smallest model that preserves routing quality.</li>
+                </ul>
+              </div>
+              <div class="panel fragment layer-rise" data-fragment-index="2">
+                <small class="label">Reliability</small>
+                <ul class="bullet-list compact">
+                  <li>Fail honestly on unsupported transactions.</li>
+                  <li>Degrade gracefully when retrieval fails.</li>
+                  <li>Use traces to tighten policies over time.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Target time: 1:05. This is the support slide for architecture, not a new conceptual section.
+          </aside>
+        </section>
+
+        <section data-chapter="demo" data-intro-shift="true">
+          <div class="frame intro-shift-frame">
+            <div class="heading-row intro-heading">
+              <div>
+                <span class="eyebrow">Demo</span>
+                <h2>Live Proof</h2>
+              </div>
+              <p class="support">
+                The live demo should replay the same story the deck has already explained.
+              </p>
+            </div>
+            <div class="intro-body">
+              <div class="timeline demo-line">
+                <div class="time-step fragment layer-rise" data-fragment-index="1">
+                  <small>Proof 1</small>
+                  <h4>Planning Question</h4>
+                  <p>Ask the Chicago-style planning question and show `search_attractions` firing.</p>
+                </div>
+                <div class="time-step fragment layer-rise" data-fragment-index="2">
+                  <small>Proof 2</small>
+                  <h4>Current Info</h4>
+                  <p>Ask a weather or advisory question and show the `search_web` branch instead.</p>
+                </div>
+                <div class="time-step fragment layer-rise" data-fragment-index="3">
+                  <small>Proof 3</small>
+                  <h4>Booking Request</h4>
+                  <p>Ask for a booking action and show the honest limit instead of a fake transaction.</p>
+                </div>
+                <div class="time-step fragment layer-rise" data-fragment-index="4">
+                  <small>Proof 4</small>
+                  <h4>Phoenix Evidence</h4>
+                  <p>Open the trace and show the attached evaluation annotations.</p>
+                </div>
+              </div>
+            </div>
+            <div class="quote-band fragment glow-in" data-fragment-index="5">
+              <span>What To Verify</span>
+              <p>Tool choice, span breakdown, source-backed synthesis, and evaluation results that match the observed interaction.</p>
+            </div>
+            <span class="intro-trigger fragment" data-fragment-index="0" aria-hidden="true"></span>
+          </div>
+          <aside class="notes">
+            Target time: 4:00. The live demo is proof of the story, not a new story.
+          </aside>
+        </section>
+
+        <section data-chapter="outcome" data-intro-shift="true">
+          <div class="frame close intro-shift-frame">
+            <div class="heading-row intro-heading">
+              <div>
+                <span class="eyebrow">Outcome</span>
+                <h2>Outcome</h2>
+              </div>
+              <p class="support">
+                The final result is a travel assistant whose behavior can be seen, judged, and improved, not just a demo that happens to answer questions.
+              </p>
+            </div>
+            <div class="intro-body">
+              <div class="grid grid-3 outcome-grid">
+                <div class="panel fragment layer-rise" data-fragment-index="1">
+                  <small class="label">What Was Built</small>
+                  <ul class="bullet-list compact">
+                    <li>A travel-planning tool with structured output</li>
+                    <li>A traced runtime with Phoenix visibility</li>
+                    <li>A trace-based evaluation workflow</li>
+                  </ul>
+                </div>
+                <div class="panel fragment layer-rise" data-fragment-index="2">
+                  <small class="label">What Was Learned</small>
+                  <ul class="bullet-list compact">
+                    <li>Unsupported requests still create frustration.</li>
+                    <li>Mixed-intent prompts can misroute tool choice.</li>
+                    <li>Traces make those failures easy to localize.</li>
+                  </ul>
+                </div>
+                <div class="panel fragment layer-rise" data-fragment-index="3">
+                  <small class="label">Submission Proof</small>
+                  <ul class="bullet-list compact">
+                    <li>Tests, Docker, setup instructions, and README</li>
+                    <li>Artifacts for traces, evals, and datasets</li>
+                    <li>A production architecture and live demo plan</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="footer-link">
+              <a href="https://github.com/omar2001ramadan/se-interview">github.com/omar2001ramadan/se-interview</a>
+            </div>
+            <span class="intro-trigger fragment" data-fragment-index="0" aria-hidden="true"></span>
+          </div>
+          <aside class="notes">
+            Target time: 1:00. Close on explainability, evidence, and why the repo now satisfies the assessment.
+          </aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="vendor/reveal/dist/reveal.js"></script>
+    <script src="vendor/reveal/plugin/notes/notes.js"></script>
+    <script src="vendor/mermaid/mermaid.min.js"></script>
+    <script src="assets/app.js"></script>
+  </body>
+</html>

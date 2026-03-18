@@ -147,3 +147,21 @@ docker compose up --build
 - Production architecture: `docs/production_architecture.md`
 - Design decisions: `docs/design_decisions.md`
 - Presentation outline: `docs/presentation.md`
+- Reveal.js interview deck: `docs/slides/index.html`
+
+## Present The Deck Locally
+
+Serve the slide directory with a simple local web server:
+
+```bash
+cd docs/slides
+python3 -m http.server 4173
+```
+
+Then open [http://localhost:4173](http://localhost:4173).
+
+Presenter tips:
+
+- Press `S` to open speaker notes in a second window.
+- Use the slide number and progress bar for pacing.
+- The deck is built as a local-first reveal.js site with vendored reveal assets, so it does not depend on a CDN during the interview.
