@@ -1,0 +1,52 @@
+[
+  {
+    "prompt": "I have one day in Chicago and love architecture and river walks. What should I do?",
+    "expected_primary_tool": "search_attractions",
+    "scenario_type": "travel_planning"
+  },
+  {
+    "prompt": "What are the top museums in Madrid for modern art lovers?",
+    "expected_primary_tool": "search_attractions",
+    "scenario_type": "travel_planning"
+  },
+  {
+    "prompt": "Find family-friendly attractions in San Diego for kids under 10.",
+    "expected_primary_tool": "search_attractions",
+    "scenario_type": "travel_planning"
+  },
+  {
+    "prompt": "What are some nightlife areas worth visiting in Tokyo this weekend?",
+    "expected_primary_tool": "search_attractions",
+    "scenario_type": "travel_planning"
+  },
+  {
+    "prompt": "What is the weather forecast in Lisbon for the next few days?",
+    "expected_primary_tool": "search_web",
+    "scenario_type": "current_info"
+  },
+  {
+    "prompt": "Are there any major flight delays at JFK today?",
+    "expected_primary_tool": "search_web",
+    "scenario_type": "current_info"
+  },
+  {
+    "prompt": "What are the latest travel advisories for visiting France from the US?",
+    "expected_primary_tool": "search_web",
+    "scenario_type": "current_info"
+  },
+  {
+    "prompt": "This is the second time I'm asking. Just book me a hotel in Rome for next Friday.",
+    "expected_primary_tool": "none",
+    "scenario_type": "unsupported_booking"
+  },
+  {
+    "prompt": "You still have not helped me. Reserve two tickets to the Louvre for tomorrow morning.",
+    "expected_primary_tool": "none",
+    "scenario_type": "unsupported_booking"
+  },
+  {
+    "prompt": "I want to plan a food-focused weekend in New Orleans. Where should I go?",
+    "expected_primary_tool": "search_attractions",
+    "scenario_type": "travel_planning"
+  }
+]
