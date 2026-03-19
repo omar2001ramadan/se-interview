@@ -1,0 +1,25 @@
+{
+  "name": "travel-assistant-slides",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "dependencies": {
+    "mermaid": "^11.13.0",
+    "reveal.js": "^6.0.0",
+    "svelte": "^5.54.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "@types/node": "^24.10.1",
+    "playwright": "^1.58.2",
+    "svelte-check": "^4.4.5",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.0"
+  }
+}

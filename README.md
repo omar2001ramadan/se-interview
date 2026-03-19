@@ -147,14 +147,18 @@ docker compose up --build
 - Production architecture: `docs/production_architecture.md`
 - Design decisions: `docs/design_decisions.md`
 - Presentation outline: `docs/presentation.md`
-- Reveal.js interview deck: `docs/slides/index.html`
+- Slide source app: `docs/slides-src/`
+- Built reveal.js deck: `docs/slides-dist/index.html`
 
 ## Present The Deck Locally
 
-Serve the slide directory with a simple local web server:
+Build the Svelte deck, then serve the generated static output:
 
 ```bash
-cd docs/slides
+cd docs/slides-src
+npm install
+npm run build
+cd ../slides-dist
 python3 -m http.server 4173
 ```
 
@@ -163,5 +167,6 @@ Then open [http://localhost:4173](http://localhost:4173).
 Presenter tips:
 
 - Press `S` to open speaker notes in a second window.
-- Use the slide number and progress bar for pacing.
-- The deck is built as a local-first reveal.js site with vendored reveal assets, so it does not depend on a CDN during the interview.
+- Use the slide number and chapter rail for pacing.
+- For iterative design work, run `npm run dev` inside `docs/slides-src`.
+- The presentation artifact is the static deck under `docs/slides-dist`, which can be served from any simple local web server.

@@ -9,3 +9,5 @@ dist/
 build/
 .DS_Store
 .pytest_cache/
+node_modules/
+docs/slides-src/.svelte-kit/

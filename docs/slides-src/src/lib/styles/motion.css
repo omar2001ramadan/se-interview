@@ -1,0 +1,118 @@
+.fragment.layer-rise {
+  transition: transform 0.45s ease, opacity 0.45s ease, box-shadow 0.45s ease;
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.fragment.layer-rise.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fragment.scale-in {
+  transition: transform 0.45s ease, opacity 0.45s ease;
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+.fragment.scale-in.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.fragment.slide-in {
+  transition: transform 0.45s ease, opacity 0.45s ease;
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.fragment.slide-in.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.fragment.glow-in {
+  transition: transform 0.45s ease, opacity 0.45s ease, box-shadow 0.45s ease;
+  opacity: 0;
+  transform: translateY(14px);
+  box-shadow: 0 0 0 rgba(15, 112, 104, 0);
+}
+
+.fragment.glow-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+  box-shadow: 0 16px 36px rgba(15, 112, 104, 0.08);
+}
+
+.fragment.reveal-up,
+.fragment.reveal-card,
+.fragment.metric-pop,
+.fragment.sequence-glow {
+  transition:
+    opacity 0.52s ease,
+    transform 0.52s ease,
+    box-shadow 0.52s ease,
+    border-color 0.52s ease;
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.fragment.reveal-up.visible,
+.fragment.reveal-card.visible,
+.fragment.metric-pop.visible,
+.fragment.sequence-glow.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fragment.reveal-card.visible,
+.fragment.sequence-glow.visible {
+  box-shadow:
+    0 0 0 1px rgba(166, 236, 255, 0.14),
+    0 20px 42px rgba(4, 6, 24, 0.28);
+  border-color: rgba(166, 236, 255, 0.22);
+}
+
+.fragment.metric-pop {
+  transform: translateY(10px) scale(0.98);
+}
+
+.fragment.metric-pop.visible {
+  transform: translateY(0) scale(1);
+}
+
+.fragment.sequence-glow.visible {
+  animation: softPulse 1.1s ease-out;
+}
+
+.fragment.path-draw {
+  opacity: 0.18;
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  transition:
+    opacity 0.52s ease,
+    stroke-dashoffset 0.72s ease;
+}
+
+.fragment.path-draw.visible {
+  opacity: 1;
+  stroke-dashoffset: 0;
+}
+
+@keyframes softPulse {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(166, 236, 255, 0),
+      0 14px 30px rgba(4, 6, 24, 0.18);
+  }
+  45% {
+    box-shadow:
+      0 0 0 1px rgba(166, 236, 255, 0.28),
+      0 22px 44px rgba(4, 6, 24, 0.34);
+  }
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(166, 236, 255, 0.14),
+      0 20px 42px rgba(4, 6, 24, 0.28);
+  }
+}

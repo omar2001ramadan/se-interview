@@ -1,0 +1,174 @@
+.mermaid-flow {
+  overflow: visible;
+}
+
+.mermaid-flow svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.mermaid-flow .node rect,
+.mermaid-flow .node polygon,
+.mermaid-flow .node path {
+  rx: 20px;
+  ry: 20px;
+  filter: drop-shadow(0 10px 24px rgba(4, 6, 24, 0.3));
+}
+
+.mermaid-flow .labelBkg {
+  fill: transparent;
+}
+
+.mermaid-flow .nodeLabel,
+.mermaid-flow .label text,
+.mermaid-flow foreignObject div {
+  color: var(--ar-text);
+  font-family: var(--sans) !important;
+}
+
+.mermaid-flow .edgeLabel {
+  background: rgba(11, 16, 56, 0.88) !important;
+  color: var(--ar-subtext) !important;
+  border-radius: 10px;
+  padding: 4px 8px;
+}
+
+.trace-board {
+  display: grid;
+  gap: 18px;
+  min-height: 430px;
+}
+
+.trace-root,
+.trace-span {
+  position: relative;
+}
+
+.trace-root::before,
+.trace-span::before {
+  content: "";
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(166, 236, 255, 0.3), rgba(255, 255, 255, 0));
+}
+
+.trace-branch {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.eval-pipeline {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1.2fr auto 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.eval-node.wide {
+  min-height: 162px;
+}
+
+.eval-arrow,
+.arch-arrow {
+  font-size: 1.5rem;
+  color: var(--ar-blue-2);
+  font-family: var(--sans);
+  font-weight: 700;
+  text-align: center;
+}
+
+.production-architecture {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.loop-svg {
+  display: block;
+  width: min(1120px, 100%);
+  height: auto;
+  margin: 36px auto 0;
+  overflow: visible;
+}
+
+.loop-ring path,
+.loop-stop-path,
+.loop-start-path {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.loop-arc-top,
+.loop-arc-bottom,
+.loop-stop-path {
+  stroke: rgba(228, 232, 255, 0.9);
+  stroke-width: 3.3;
+}
+
+.loop-start-path {
+  stroke: var(--ar-blue-2);
+  stroke-width: 4.5;
+}
+
+.loop-node-svg rect,
+.loop-node-svg circle {
+  fill: rgba(16, 20, 64, 0.96);
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 2.2;
+  filter: drop-shadow(0 10px 22px rgba(4, 6, 24, 0.28));
+}
+
+.loop-node-svg.node-llm rect {
+  fill: rgba(102, 169, 221, 0.18);
+  stroke: var(--ar-blue-2);
+  stroke-width: 4;
+}
+
+.loop-node-svg.node-end circle {
+  fill: rgba(240, 106, 182, 0.12);
+  stroke: var(--ar-pink-1);
+  stroke-width: 4;
+}
+
+.loop-node-svg text {
+  fill: var(--ar-text);
+  font-family: var(--sans);
+  font-size: 24px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.loop-edge-labels text {
+  fill: var(--ar-subtext);
+  font-family: var(--sans);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-anchor: middle;
+}
+
+.arch-column {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.arch-card.strong {
+  background: linear-gradient(180deg, rgba(22, 35, 95, 0.92), rgba(15, 19, 60, 0.98));
+  border-color: rgba(166, 236, 255, 0.18);
+}
+
+@media (max-width: 1440px) {
+  .trace-branch,
+  .eval-pipeline,
+  .production-architecture {
+    grid-template-columns: 1fr;
+  }
+}
