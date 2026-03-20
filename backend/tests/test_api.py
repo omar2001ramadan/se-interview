@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from pathlib import Path
 
 from travel_assistant.api import _build_ui_response, create_app
 from travel_assistant.schemas import (
@@ -9,6 +10,8 @@ from travel_assistant.schemas import (
     BoundaryEmbeddingSummary,
     BoundaryMatrixCell,
     BoundaryMatrixRow,
+    CorpusManifest,
+    CorpusDescriptor,
     DemoOverview,
     EvaluationResult,
     EvaluationResultsResponse,
@@ -243,6 +246,35 @@ class FakeDemoService:
             )
         )
 
+    def get_corpora(self):
+        return CorpusManifest(
+            corpora=[
+                CorpusDescriptor(
+                    id="evaluation",
+                    label="Evaluation Corpus",
+                    count=10,
+                    session_ids=["travel-session-1"],
+                    prompts=["Plan a day in Chicago"],
+                    download_url="/demo/corpora/evaluation/download",
+                ),
+                CorpusDescriptor(
+                    id="boundary",
+                    label="Boundary Corpus",
+                    count=50,
+                    session_ids=["travel-session-boundary-1"],
+                    prompts=["Book me a hotel in Rome."],
+                    download_url="/demo/corpora/boundary/download",
+                ),
+            ]
+        )
+
+    def corpus_file_path(self, corpus_id: str):
+        files = {
+            "evaluation": Path("/Users/omarramadan/Desktop/arize/backend/evals/query_corpus.json"),
+            "boundary": Path("/Users/omarramadan/Desktop/arize/backend/evals/boundary_prompt_corpus.json"),
+        }
+        return files.get(corpus_id)
+
 
 def test_health_endpoint_returns_ok():
     client = TestClient(create_app(agent_executor=FakeAgent()))
@@ -343,3 +375,13 @@ def test_demo_boundary_projection_returns_live_point():
     assert payload["point"]["source"] == "live"
     assert payload["point"]["confusion_label"] == "tp"
     assert payload["point"]["session_id"] == "travel-session-live-1"
+
+
+def test_demo_corpora_endpoints_return_manifest_and_downloads():
+    client = TestClient(create_app(agent_executor=FakeAgent(), demo_service=FakeDemoService()))
+    manifest = client.get("/demo/corpora")
+    download = client.get("/demo/corpora/evaluation/download")
+    assert manifest.status_code == 200
+    assert manifest.json()["corpora"][0]["id"] == "evaluation"
+    assert download.status_code == 200
+    assert download.headers["content-type"].startswith("application/json")

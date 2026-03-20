@@ -20,6 +20,8 @@ from travel_assistant.schemas import (
     BoundaryEmbeddingPoint,
     BoundaryMatrixCell,
     BoundaryMatrixRow,
+    CorpusDescriptor,
+    CorpusManifest,
     DemoOverview,
     EvaluationResult,
     EvaluationResultsResponse,
@@ -31,10 +33,12 @@ from travel_assistant.schemas import (
     TraceListItem,
     TraceListResponse,
 )
+from travel_assistant.query_loader import session_id_for_prompt
 
 TOOL_NAMES = {"search_attractions", "search_web"}
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACTS_DIR = BACKEND_ROOT / "artifacts"
+EVALS_DIR = BACKEND_ROOT / "evals"
 PRESENTATION_ROOT = BACKEND_ROOT.parent / "presentation"
 MERMAID_BLOCK_RE = re.compile(r"```mermaid\s*(.*?)```", re.DOTALL)
 REFUSAL_PATTERNS = (
@@ -246,6 +250,16 @@ class DemoDataService:
 
     def _load_artifact_rows(self, name: str, *, default: Any) -> Any:
         return _read_json(ARTIFACTS_DIR / name, default)
+
+    def _load_corpus_rows(self, name: str, *, default: Any) -> Any:
+        return _read_json(EVALS_DIR / name, default)
+
+    def corpus_file_path(self, corpus_id: str) -> Path | None:
+        corpus_files = {
+            "evaluation": EVALS_DIR / "query_corpus.json",
+            "boundary": EVALS_DIR / "boundary_prompt_corpus.json",
+        }
+        return corpus_files.get(corpus_id)
 
     def _load_span_rows(
         self,
@@ -585,7 +599,7 @@ class DemoDataService:
             observability_flow=observability_flow,
             evaluation_flow=evaluation_flow,
             production_tradeoffs=production_tradeoffs,
-            deck_url="http://localhost:4173",
+            deck_url=self.settings.presentation_deck_url,
             deck_path=str(deck_path),
         )
 
@@ -723,3 +737,36 @@ class DemoDataService:
             phoenix_base_url=self.settings.phoenix_base_url,
             phoenix_project_name=self.settings.phoenix_project_name,
         )
+
+    def get_corpora(self) -> CorpusManifest:
+        query_rows = self._load_corpus_rows("query_corpus.json", default=[])
+        boundary_rows = self._load_corpus_rows("boundary_prompt_corpus.json", default=[])
+        corpora = [
+            CorpusDescriptor(
+                id="evaluation",
+                label="Evaluation Corpus",
+                description="The 10-query scripted set used for tool routing and user-frustration evaluation.",
+                count=len(query_rows),
+                prompts=[str(row.get("prompt") or "") for row in query_rows if isinstance(row, dict) and row.get("prompt")],
+                session_ids=[
+                    session_id_for_prompt(str(row.get("prompt") or ""))
+                    for row in query_rows
+                    if isinstance(row, dict) and row.get("prompt")
+                ],
+                download_url="/demo/corpora/evaluation/download",
+            ),
+            CorpusDescriptor(
+                id="boundary",
+                label="Boundary Corpus",
+                description="The 50-prompt stress set for unsupported bookings, frustration, and refusal behavior.",
+                count=len(boundary_rows),
+                prompts=[str(row.get("prompt") or "") for row in boundary_rows if isinstance(row, dict) and row.get("prompt")],
+                session_ids=[
+                    session_id_for_prompt(str(row.get("prompt") or ""))
+                    for row in boundary_rows
+                    if isinstance(row, dict) and row.get("prompt")
+                ],
+                download_url="/demo/corpora/boundary/download",
+            ),
+        ]
+        return CorpusManifest(available=True, corpora=corpora)

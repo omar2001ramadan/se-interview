@@ -20,6 +20,7 @@
   />
 
   <Panel className="evidence-metric-board">
+    <div class="snapshot-note">Artifact snapshot from the latest 10-query run. Rerun the query and evaluation scripts to refresh these counts.</div>
     <div class="evidence-storyline">
       <span>10 runs</span>
       <span>132 spans</span>
@@ -95,6 +96,14 @@
     font-size: 0.82rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
+  }
+
+  .snapshot-note {
+    margin: 0 0 12px;
+    color: var(--ar-muted);
+    font-size: 0.76rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 
   .evidence-storyline span + span::before {

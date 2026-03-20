@@ -4,11 +4,27 @@ import os
 from dataclasses import dataclass
 from functools import lru_cache
 
+LOCAL_CORS_ORIGINS = (
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
+)
+
 
 def _as_bool(value: str | None, default: bool) -> bool:
     if value is None:
         return default
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _as_csv_list(value: str | None, default: tuple[str, ...]) -> tuple[str, ...]:
+    if value is None:
+        return default
+    items = tuple(item.strip().rstrip("/") for item in value.split(",") if item.strip())
+    return items or default
 
 
 @dataclass(frozen=True)
@@ -23,6 +39,8 @@ class Settings:
     phoenix_collector_endpoint: str
     search_region: str
     query_corpus_path: str
+    cors_allowed_origins: tuple[str, ...]
+    presentation_deck_url: str
 
 
 @lru_cache(maxsize=1)
@@ -42,4 +60,9 @@ def get_settings() -> Settings:
         ),
         search_region=os.getenv("SEARCH_REGION", "wt-wt"),
         query_corpus_path=os.getenv("QUERY_CORPUS_PATH", "evals/query_corpus.json"),
+        cors_allowed_origins=_as_csv_list(
+            os.getenv("CORS_ALLOWED_ORIGINS"),
+            LOCAL_CORS_ORIGINS,
+        ),
+        presentation_deck_url=os.getenv("PRESENTATION_DECK_URL", "http://localhost:4173").rstrip("/"),
     )

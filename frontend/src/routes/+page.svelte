@@ -40,6 +40,22 @@
     phoenix_project_name?: string | null;
   };
 
+  type CorpusDescriptor = {
+    id: string;
+    label: string;
+    description?: string | null;
+    count: number;
+    session_ids: string[];
+    prompts: string[];
+    download_url: string;
+  };
+
+  type CorpusManifest = {
+    available: boolean;
+    message?: string | null;
+    corpora: CorpusDescriptor[];
+  };
+
   type TraceListItem = {
     trace_id: string;
     span_id?: string | null;
@@ -212,11 +228,6 @@
 
   const API_BASE_URL = (import.meta.env.PUBLIC_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
   const STORAGE_KEY = "travel-assistant-chat";
-  const promptSuggestions = [
-    "I have one day in Chicago and love architecture and river walks. What should I do?",
-    "What is the weather forecast in Lisbon for the next few days?",
-    "Reserve two tickets to the Louvre for tomorrow morning.",
-  ];
   const tabs: { id: DemoTab; label: string }[] = [
     { id: "chat", label: "Chat" },
     { id: "live", label: "Live" },
@@ -227,6 +238,10 @@
   ];
 
   let prompt = "";
+  let selectedCorpusId = "evaluation";
+  let corpusDownloadsOpen = false;
+  let corporaManifest: CorpusManifest | null = null;
+  let visiblePromptSuggestions: string[] = [];
   let messages: ChatMessage[] = [];
   let isLoading = false;
   let errorMessage = "";
@@ -234,12 +249,16 @@
 
   let overview: DemoOverview | null = null;
   let traces: TraceListItem[] = [];
+  let visibleTraces: TraceListItem[] = [];
   let tracesAvailable = true;
   let tracesMessage = "";
   let traceDetail: TraceDetail | null = null;
   let evaluationSummary: EvaluationSummary | null = null;
   let evaluationResults: EvaluationResultsResponse | null = null;
   let frustratedInteractions: FrustratedInteraction[] = [];
+  let visibleUserFrustration: EvaluationResult[] = [];
+  let visibleToolUsage: EvaluationResult[] = [];
+  let visibleFrustratedInteractions: FrustratedInteraction[] = [];
   let boundaryData: BoundaryEmbeddingResponse | null = null;
   let architecture: ArchitectureContent | null = null;
   let architectureDiagram: { nodes: DiagramNode[]; edges: DiagramEdge[] } = { nodes: [], edges: [] };
@@ -257,6 +276,7 @@
   let lastPointerX = 0;
   let lastPointerY = 0;
   let allBoundaryPoints: BoundaryEmbeddingPoint[] = [];
+  let corpusScopedBoundaryPoints: BoundaryEmbeddingPoint[] = [];
   let filteredBoundaryPoints: BoundaryEmbeddingPoint[] = [];
   let boundaryCategories: string[] = [];
   let categoryConfusionRows: Array<{
@@ -315,6 +335,14 @@
       healthStatus = response.ok ? "up" : "down";
     } catch {
       healthStatus = "down";
+    }
+  }
+
+  async function loadCorpora() {
+    try {
+      corporaManifest = await fetchJson<CorpusManifest>("/demo/corpora");
+    } catch {
+      corporaManifest = null;
     }
   }
 
@@ -425,6 +453,16 @@
 
   function applyPromptSuggestion(text: string) {
     prompt = text;
+  }
+
+  function selectCorpus(corpusId: string) {
+    selectedCorpusId = corpusId;
+    corpusDownloadsOpen = false;
+    selectedBoundaryCategory = "all";
+  }
+
+  function toggleCorpusDownloads() {
+    corpusDownloadsOpen = !corpusDownloadsOpen;
   }
 
   function percent(value?: number | null) {
@@ -732,14 +770,47 @@
     return { nodes, edges };
   }
 
+  function selectedCorpus() {
+    return corporaManifest?.corpora.find((corpus) => corpus.id === selectedCorpusId) ?? null;
+  }
+
+  function selectedCorpusPromptSet() {
+    return new Set(selectedCorpus()?.prompts ?? []);
+  }
+
+  function selectedCorpusSessionSet() {
+    return new Set(selectedCorpus()?.session_ids ?? []);
+  }
+
   $: architectureDiagram = parseMermaid(architecture?.mermaid_diagram);
+  $: visiblePromptSuggestions = (selectedCorpus()?.prompts ?? []).slice(0, 3);
+  $: visibleTraces = (() => {
+    const sessions = selectedCorpusSessionSet();
+    return traces.filter((trace) => trace.session_id && sessions.has(trace.session_id));
+  })();
+  $: visibleUserFrustration = (() => {
+    const sessions = selectedCorpusSessionSet();
+    return (evaluationResults?.user_frustration ?? []).filter((row) => row.session_id && sessions.has(row.session_id));
+  })();
+  $: visibleToolUsage = (() => {
+    const sessions = selectedCorpusSessionSet();
+    return (evaluationResults?.tool_usage ?? []).filter((row) => row.session_id && sessions.has(row.session_id));
+  })();
+  $: visibleFrustratedInteractions = (() => {
+    const sessions = selectedCorpusSessionSet();
+    return frustratedInteractions.filter((row) => sessions.has(row.session_id));
+  })();
   $: allBoundaryPoints = [...(boundaryData?.points ?? []), ...liveBoundaryPoints];
+  $: corpusScopedBoundaryPoints =
+    selectedCorpusId === "boundary"
+      ? allBoundaryPoints
+      : liveBoundaryPoints.filter((point) => !point.expected_refusal);
   $: filteredBoundaryPoints =
     selectedBoundaryCategory === "all"
-      ? allBoundaryPoints
+      ? corpusScopedBoundaryPoints
       : selectedBoundaryCategory === "live"
-        ? allBoundaryPoints.filter((point) => point.source === "live")
-        : allBoundaryPoints.filter((point) => point.category === selectedBoundaryCategory);
+        ? corpusScopedBoundaryPoints.filter((point) => point.source === "live")
+        : corpusScopedBoundaryPoints.filter((point) => point.category === selectedBoundaryCategory);
   $: projectedBoundaryPoints =
     filteredBoundaryPoints
       .map((point) => {
@@ -772,7 +843,7 @@
       string,
       { category: string; total: number; tp: number; tn: number; fp: number; fn: number; accuracy: number }
     >();
-    for (const point of allBoundaryPoints) {
+    for (const point of corpusScopedBoundaryPoints) {
       const current = grouped.get(point.category) ?? {
         category: point.category,
         total: 0,
@@ -802,14 +873,21 @@
       : categoryConfusionRows.filter((row) => row.category === selectedBoundaryCategory);
   $: liveSessionRows = (() => {
     const rows: LiveSessionRow[] = [];
+    const promptSet = selectedCorpusPromptSet();
     for (let index = 0; index < messages.length; index += 1) {
       const message = messages[index];
       if (message.role !== "assistant" || !message.sessionId) continue;
       const promptMessage = messages[index - 1];
+      const promptText = promptMessage?.role === "user" ? promptMessage.content : "Prompt unavailable.";
       const point = liveBoundaryPoints.find((entry) => entry.session_id === message.sessionId) ?? null;
+      if (selectedCorpusId === "boundary" && point && !point.expected_refusal) continue;
+      if (selectedCorpusId === "evaluation" && point?.expected_refusal) continue;
+      if (selectedCorpusId === "evaluation" && promptSet.size > 0 && promptText !== "Prompt unavailable." && !promptSet.has(promptText) && point === null) {
+        continue;
+      }
       rows.push({
         sessionId: message.sessionId,
-        prompt: promptMessage?.role === "user" ? promptMessage.content : "Prompt unavailable.",
+        prompt: promptText,
         response: message.content,
         point,
       });
@@ -854,7 +932,7 @@
 
   onMount(async () => {
     hydrateMessages();
-    await Promise.all([checkHealth(), loadOverview(), loadTraces(), loadEvaluation(), loadBoundaries(), loadArchitecture()]);
+    await Promise.all([checkHealth(), loadCorpora(), loadOverview(), loadTraces(), loadEvaluation(), loadBoundaries(), loadArchitecture()]);
   });
 </script>
 
@@ -892,6 +970,39 @@
       </div>
     </header>
 
+    <div class="corpus-bar">
+      <div class="corpus-tabs" aria-label="Corpus filters">
+        {#each corporaManifest?.corpora ?? [] as corpus}
+          <button
+            class:active={selectedCorpusId === corpus.id}
+            class="tab-button corpus-pill"
+            type="button"
+            on:click={() => selectCorpus(corpus.id)}
+          >
+            {corpus.label}
+          </button>
+        {/each}
+        <button
+          class:active={corpusDownloadsOpen}
+          class="tab-button corpus-pill"
+          type="button"
+          on:click={toggleCorpusDownloads}
+        >
+          Download
+        </button>
+      </div>
+
+      {#if corpusDownloadsOpen}
+        <div class="download-row">
+          {#each corporaManifest?.corpora ?? [] as corpus}
+            <a class="filter-chip download-chip" href={`${API_BASE_URL}${corpus.download_url}`} download>
+              {corpus.label} JSON
+            </a>
+          {/each}
+        </div>
+      {/if}
+    </div>
+
     <nav class="tab-bar" aria-label="Demo sections">
       {#each tabs as tab}
         <button
@@ -920,7 +1031,7 @@
                 </div>
 
                 <div class="prompt-row">
-                  {#each promptSuggestions as suggestion}
+                  {#each visiblePromptSuggestions as suggestion}
                     <button class="chip" type="button" on:click={() => applyPromptSuggestion(suggestion)}>
                       {suggestion}
                     </button>
@@ -1050,11 +1161,11 @@
               <p class="inline-message">{tracesMessage}</p>
             {/if}
 
-            {#if traces.length === 0}
+            {#if visibleTraces.length === 0}
               <p class="muted">No traces are available yet.</p>
             {:else}
               <div class="trace-list">
-                {#each traces as trace}
+                {#each visibleTraces as trace}
                   <button
                     class:active={$selectedTraceId === trace.trace_id}
                     class:highlight={trace.session_id && trace.session_id === $recentSessionId}
@@ -1164,9 +1275,9 @@
                 <h2>User Frustration</h2>
               </div>
 
-              {#if evaluationResults?.user_frustration?.length}
+              {#if visibleUserFrustration.length > 0}
                 <div class="result-stack">
-                  {#each evaluationResults.user_frustration as result}
+                  {#each visibleUserFrustration as result}
                     <article class={`result-card ${toneForLabel(result.label)}`}>
                       <div class="result-header">
                         <strong>{result.label}</strong>
@@ -1189,9 +1300,9 @@
                 <h2>Tool Usage</h2>
               </div>
 
-              {#if evaluationResults?.tool_usage?.length}
+              {#if visibleToolUsage.length > 0}
                 <div class="result-stack">
-                  {#each evaluationResults.tool_usage as result}
+                  {#each visibleToolUsage as result}
                     <article class={`result-card ${toneForLabel(result.label)}`}>
                       <div class="result-header">
                         <strong>{result.label}</strong>
@@ -1215,9 +1326,9 @@
               <h2>Frustrated Interactions</h2>
             </div>
 
-            {#if frustratedInteractions.length > 0}
+            {#if visibleFrustratedInteractions.length > 0}
               <div class="result-stack">
-                {#each frustratedInteractions as item}
+                {#each visibleFrustratedInteractions as item}
                   <article class="result-card bad">
                     <div class="result-header">
                       <strong>{item.label}</strong>

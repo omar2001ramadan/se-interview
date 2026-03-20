@@ -14,6 +14,7 @@
   <div class="routing-layout">
     <Panel className="scoreboard-card fragment reveal-card" data-fragment-index="0">
       <small class="label">Routing scoreboard</small>
+      <p class="snapshot-note">Artifact snapshot from the latest 10-query evaluation run.</p>
       <div class="scoreboard">
         <div class="scorebox fragment metric-pop" data-fragment-index="1">
           <strong>9</strong>
@@ -63,6 +64,14 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
     margin-top: 14px;
+  }
+
+  .snapshot-note {
+    margin: 10px 0 0;
+    color: var(--ar-muted);
+    font-size: 0.74rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 
   .scorebox {

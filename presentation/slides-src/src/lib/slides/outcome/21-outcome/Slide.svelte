@@ -29,20 +29,6 @@
     </div>
 
     <div class="outcome-lower fragment reveal-card" data-fragment-index="3">
-      <Panel className="outcome-wide repo-panel">
-        <small class="label">Repo Quality</small>
-        <h4>Backend, frontend, presentation</h4>
-        <p>The repo now looks like a project you can run, test, demo, and explain in an interview from one workspace layout.</p>
-        <div class="outcome-tags">
-          <span>frontend</span>
-          <span>backend</span>
-          <span>presentation</span>
-          <span>run</span>
-          <span>test</span>
-          <span>demo</span>
-        </div>
-      </Panel>
-
       <Panel className="outcome-wide next-panel">
         <small class="label">Next Step</small>
         <h4>Prompt and recovery tuning</h4>
@@ -69,7 +55,7 @@
 
   .outcome-lower {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: 18px;
     min-height: 250px;
   }
@@ -82,14 +68,6 @@
     min-height: 250px;
   }
 
-  .outcome-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 18px;
-  }
-
-  .outcome-tags span,
   .next-list div {
     display: inline-flex;
     align-items: center;

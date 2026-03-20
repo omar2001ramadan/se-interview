@@ -40,6 +40,22 @@ class DemoOverview(BaseModel):
     phoenix_project_name: str | None = None
 
 
+class CorpusDescriptor(BaseModel):
+    id: str
+    label: str
+    description: str | None = None
+    count: int = 0
+    session_ids: list[str] = Field(default_factory=list)
+    prompts: list[str] = Field(default_factory=list)
+    download_url: str
+
+
+class CorpusManifest(BaseModel):
+    available: bool = True
+    message: str | None = None
+    corpora: list[CorpusDescriptor] = Field(default_factory=list)
+
+
 class TraceListItem(BaseModel):
     trace_id: str
     span_id: str | None = None

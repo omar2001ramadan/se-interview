@@ -1,0 +1,12 @@
+.git
+.DS_Store
+**/.DS_Store
+**/.env
+**/.env.*
+!**/.env.example
+**/.pytest_cache
+**/__pycache__
+**/.svelte-kit
+**/node_modules
+frontend/build
+presentation/slides-dist

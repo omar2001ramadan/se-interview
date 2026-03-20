@@ -145,6 +145,29 @@ body {
   margin-bottom: 18px;
 }
 
+.corpus-bar {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.corpus-tabs,
+.download-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.corpus-pill.active {
+  border-color: rgba(240, 106, 182, 0.24);
+  background: rgba(240, 106, 182, 0.1);
+  color: var(--ar-pink-1);
+}
+
+.download-chip {
+  text-decoration: none;
+}
+
 .tab-button,
 .action,
 .text-action {

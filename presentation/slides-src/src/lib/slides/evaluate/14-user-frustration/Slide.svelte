@@ -17,6 +17,7 @@
         <small class="label">Result</small>
         <strong>2</strong>
         <p>Two interactions were flagged as frustrated and collected into a Phoenix dataset.</p>
+        <p class="snapshot-note">Artifact snapshot from the latest evaluation export.</p>
       </div>
       <Panel className="story-accent pink fragment reveal-card" data-fragment-index="1">
         <small class="label">Lesson</small>
@@ -55,6 +56,14 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
+  }
+
+  .snapshot-note {
+    margin-top: 12px;
+    color: var(--ar-muted);
+    font-size: 0.74rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 
   :global(.good-path) {

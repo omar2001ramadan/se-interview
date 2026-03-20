@@ -30,3 +30,7 @@ Presentation assets:
 - `presentation/presentation.md`
 - `presentation/production_architecture.md`
 - `presentation/slides-dist/index.html`
+
+Railway deployment notes:
+
+- `RAILWAY.md`

@@ -1,16 +1,20 @@
 <div class="prod-lanes">
   <div class="prod-lane request-lane">
     <div class="lane-label">Request path</div>
-    <div class="lane-nodes">
-      <div class="lane-node strong">Client</div>
-      <div class="lane-arrow">→</div>
-      <div class="lane-node">Load Balancer</div>
-      <div class="lane-arrow">→</div>
-      <div class="lane-node strong">FastAPI + LangGraph pods</div>
-      <div class="lane-arrow">→</div>
-      <div class="lane-node">Redis cache</div>
-      <div class="lane-arrow">→</div>
-      <div class="lane-node">LLM + search providers</div>
+    <div class="request-lane-body">
+      <div class="lane-nodes request-main">
+        <div class="lane-node strong">Client</div>
+        <div class="lane-arrow">→</div>
+        <div class="lane-node">Load Balancer</div>
+        <div class="lane-arrow">→</div>
+        <div class="lane-node strong">FastAPI + LangGraph pods</div>
+        <div class="lane-arrow">→</div>
+        <div class="lane-node">LLM + search providers</div>
+      </div>
+      <div class="request-sidecar">
+        <div class="sidecar-link">cache lookups ↕</div>
+        <div class="lane-node sidecar-node">Redis cache</div>
+      </div>
     </div>
   </div>
 
@@ -54,6 +58,11 @@
     align-items: stretch;
   }
 
+  .request-lane-body {
+    display: grid;
+    gap: 12px;
+  }
+
   .lane-label {
     display: grid;
     align-content: center;
@@ -70,9 +79,27 @@
 
   .lane-nodes {
     display: grid;
-    grid-template-columns: repeat(9, auto);
+    grid-template-columns: repeat(7, auto);
     gap: 10px;
     align-items: center;
+  }
+
+  .request-main {
+    justify-content: start;
+  }
+
+  .request-sidecar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-left: 42%;
+  }
+
+  .sidecar-link {
+    color: var(--ar-blue-2);
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   .lane-node {
@@ -93,6 +120,11 @@
   .lane-node.strong {
     border-color: rgba(166, 236, 255, 0.22);
     background: linear-gradient(180deg, rgba(23, 29, 87, 0.92), rgba(14, 18, 55, 0.98));
+  }
+
+  .sidecar-node {
+    min-height: 72px;
+    min-width: 180px;
   }
 
   .lane-arrow {

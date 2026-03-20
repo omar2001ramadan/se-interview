@@ -5,7 +5,8 @@ from urllib.parse import urlparse
 import json
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.messages import HumanMessage
 
@@ -23,6 +24,7 @@ from travel_assistant.schemas import (
     ChatResponse,
     ChatSource,
     ChatUIResponse,
+    CorpusManifest,
     DemoOverview,
     EvaluationResultsResponse,
     EvaluationSummary,
@@ -160,14 +162,7 @@ def create_app(agent_executor=None, demo_service=None) -> FastAPI:
     )
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "http://localhost:5173",
-            "http://127.0.0.1:5173",
-            "http://localhost:5174",
-            "http://127.0.0.1:5174",
-            "http://localhost:4173",
-            "http://127.0.0.1:4173",
-        ],
+        allow_origins=list(settings.cors_allowed_origins),
         allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -208,6 +203,19 @@ def create_app(agent_executor=None, demo_service=None) -> FastAPI:
     @app.get("/demo/overview", response_model=DemoOverview)
     def demo_overview() -> DemoOverview:
         return app.state.demo_service.get_overview()
+
+    @app.get("/demo/corpora", response_model=CorpusManifest)
+    def demo_corpora() -> CorpusManifest:
+        return app.state.demo_service.get_corpora()
+
+    @app.get("/demo/corpora/{corpus_id}/download")
+    def download_corpus(corpus_id: str):
+        file_path = app.state.demo_service.corpus_file_path(corpus_id)
+        if file_path is None:
+            raise HTTPException(status_code=404, detail="Unknown corpus.")
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="Corpus file not found.")
+        return FileResponse(file_path, media_type="application/json", filename=file_path.name)
 
     @app.get("/demo/traces", response_model=TraceListResponse)
     def demo_traces() -> TraceListResponse:
