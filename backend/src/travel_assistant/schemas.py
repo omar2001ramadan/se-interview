@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field, field_validator
 
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, description="User prompt to send to the agent.")
+    corpus_id: str | None = None
 
 
 class ChatResponse(BaseModel):
@@ -21,6 +22,7 @@ class ChatSource(BaseModel):
 class ChatUIResponse(BaseModel):
     response: str
     session_id: str
+    corpus_id: str | None = None
     sources: list[ChatSource] = Field(default_factory=list)
     tool_hints: list[str] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)

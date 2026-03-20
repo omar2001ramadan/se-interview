@@ -12,6 +12,7 @@
   type ChatUIResponse = {
     response: string;
     session_id: string;
+    corpus_id?: string | null;
     sources: ChatSource[];
     tool_hints: string[];
     notes: string[];
@@ -336,10 +337,10 @@
     }
   }
 
-  async function loadTraces(targetSessionId?: string) {
+  async function loadTraces(targetSessionId?: string, corpusId = selectedCorpusId) {
     tracesLoading = true;
     try {
-      const payload = await fetchJson<TraceListResponse>("/demo/traces");
+      const payload = await fetchJson<TraceListResponse>(`/demo/traces?corpus_id=${encodeURIComponent(corpusId)}`);
       traces = payload.traces;
       tracesAvailable = payload.available;
       tracesMessage = payload.message || "";
@@ -380,13 +381,13 @@
     }
   }
 
-  async function loadEvaluation() {
+  async function loadEvaluation(corpusId = selectedCorpusId) {
     evaluationLoading = true;
     try {
       const [summary, results, frustrated] = await Promise.all([
         fetchJson<EvaluationSummary>("/demo/evaluations/summary"),
-        fetchJson<EvaluationResultsResponse>("/demo/evaluations/results"),
-        fetchJson<FrustratedInteractionsResponse>("/demo/evaluations/frustrated"),
+        fetchJson<EvaluationResultsResponse>(`/demo/evaluations/results?corpus_id=${encodeURIComponent(corpusId)}`),
+        fetchJson<FrustratedInteractionsResponse>(`/demo/evaluations/frustrated?corpus_id=${encodeURIComponent(corpusId)}`),
       ]);
       evaluationSummary = summary;
       evaluationResults = results;
@@ -432,6 +433,8 @@
     selectedBoundaryCategory = "all";
     selectedBoundaryPointId = null;
     void loadBoundaries(corpusId);
+    void loadTraces(undefined, corpusId);
+    void loadEvaluation(corpusId);
   }
 
   function toggleCorpusDownloads() {
@@ -652,7 +655,7 @@
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: currentPrompt }),
+        body: JSON.stringify({ message: currentPrompt, corpus_id: selectedCorpusId }),
       });
 
       if (!response.ok) {
@@ -702,10 +705,10 @@
   function switchTab(tab: DemoTab) {
     selectedTab.set(tab);
     if (tab === "traces" && traces.length === 0) {
-      void loadTraces();
+      void loadTraces(undefined, selectedCorpusId);
     }
     if (tab === "evaluation" && !evaluationSummary && !evaluationLoading) {
-      void loadEvaluation();
+      void loadEvaluation(selectedCorpusId);
     }
     if (tab === "embeddings" && !boundaryData && !boundaryLoading) {
       void loadBoundaries();

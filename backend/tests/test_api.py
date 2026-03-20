@@ -78,7 +78,7 @@ class FakeDemoService:
             phoenix_project_name="travel-assistant-assessment",
         )
 
-    def get_traces(self):
+    def get_traces(self, corpus_id: str | None = None):
         return TraceListResponse(
             traces=[
                 TraceListItem(
@@ -139,7 +139,7 @@ class FakeDemoService:
             frustrated_dataset_name="frustrated-demo",
         )
 
-    def get_evaluation_results(self):
+    def get_evaluation_results(self, corpus_id: str | None = None):
         return EvaluationResultsResponse(
             user_frustration=[
                 EvaluationResult(
@@ -164,7 +164,7 @@ class FakeDemoService:
             ],
         )
 
-    def get_frustrated_interactions(self):
+    def get_frustrated_interactions(self, corpus_id: str | None = None):
         return FrustratedInteractionsResponse(
             items=[
                 FrustratedInteraction(
@@ -294,11 +294,12 @@ def test_chat_endpoint_preserves_contract():
 
 def test_chat_ui_endpoint_returns_frontend_shape():
     client = TestClient(create_app(agent_executor=FakeToolAgent()))
-    response = client.post("/chat/ui", json={"message": "Plan a day in Chicago"})
+    response = client.post("/chat/ui", json={"message": "Plan a day in Chicago", "corpus_id": "evaluation"})
     assert response.status_code == 200
     payload = response.json()
     assert payload["response"].startswith("For Plan a day in Chicago")
     assert payload["session_id"].startswith("travel-session-")
+    assert payload["corpus_id"] == "evaluation"
     assert payload["tool_hints"] == ["search_attractions"]
     assert payload["sources"] == [{"url": "https://example.com/guide", "label": "Official Guide"}]
     assert "planning" in payload["notes"]
@@ -313,9 +314,11 @@ def test_ui_response_marks_planning_only_requests():
     payload = _build_ui_response(
         prompt="Book me a hotel in Rome",
         session_id="travel-session-test",
+        corpus_id="boundary",
         agent_result=result,
     )
     assert payload.notes == ["planning_only"]
+    assert payload.corpus_id == "boundary"
 
 
 def test_demo_overview_returns_ui_safe_summary():

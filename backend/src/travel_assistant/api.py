@@ -136,7 +136,7 @@ def _extract_notes(prompt: str, response_text: str, tool_hints: list[str]) -> li
     return notes
 
 
-def _build_ui_response(*, prompt: str, session_id: str, agent_result: dict) -> ChatUIResponse:
+def _build_ui_response(*, prompt: str, session_id: str, corpus_id: str | None, agent_result: dict) -> ChatUIResponse:
     messages = agent_result["messages"]
     response_text = str(messages[-1].content)
     tool_hints = _extract_tool_hints(messages)
@@ -145,6 +145,7 @@ def _build_ui_response(*, prompt: str, session_id: str, agent_result: dict) -> C
     return ChatUIResponse(
         response=response_text,
         session_id=session_id,
+        corpus_id=corpus_id,
         sources=tool_sources or response_sources,
         tool_hints=tool_hints,
         notes=_extract_notes(prompt, response_text, tool_hints),
@@ -171,28 +172,32 @@ def create_app(agent_executor=None, demo_service=None) -> FastAPI:
     app.state.demo_service = demo_service or DemoDataService(settings)
     app.state.settings = settings
 
-    def run_agent(prompt: str) -> tuple[str, dict]:
+    def run_agent(prompt: str, corpus_id: str | None = None) -> tuple[str, dict]:
         session_id = session_id_for_prompt(prompt)
         if app.state.agent is None:
             app.state.agent = build_agent(app.state.settings)
+        metadata = {"route": "/chat", "project": settings.phoenix_project_name}
+        if corpus_id:
+            metadata["corpus_id"] = corpus_id
         with maybe_using_attributes(
             session_id=session_id,
-            metadata={"route": "/chat", "project": settings.phoenix_project_name},
+            metadata=metadata,
         ):
             result = app.state.agent.invoke({"messages": [HumanMessage(content=prompt)]})
         return session_id, result
 
     @app.post("/chat", response_model=ChatResponse)
     def chat(request: ChatRequest) -> ChatResponse:
-        _, result = run_agent(request.message)
+        _, result = run_agent(request.message, request.corpus_id)
         return ChatResponse(response=result["messages"][-1].content)
 
     @app.post("/chat/ui", response_model=ChatUIResponse)
     def chat_ui(request: ChatRequest) -> ChatUIResponse:
-        session_id, result = run_agent(request.message)
+        session_id, result = run_agent(request.message, request.corpus_id)
         return _build_ui_response(
             prompt=request.message,
             session_id=session_id,
+            corpus_id=request.corpus_id,
             agent_result=result,
         )
 
@@ -218,8 +223,8 @@ def create_app(agent_executor=None, demo_service=None) -> FastAPI:
         return FileResponse(file_path, media_type="application/json", filename=file_path.name)
 
     @app.get("/demo/traces", response_model=TraceListResponse)
-    def demo_traces() -> TraceListResponse:
-        return app.state.demo_service.get_traces()
+    def demo_traces(corpus_id: str | None = None) -> TraceListResponse:
+        return app.state.demo_service.get_traces(corpus_id=corpus_id)
 
     @app.get("/demo/traces/{trace_id}", response_model=TraceDetail)
     def demo_trace_detail(trace_id: str) -> TraceDetail:
@@ -230,12 +235,12 @@ def create_app(agent_executor=None, demo_service=None) -> FastAPI:
         return app.state.demo_service.get_evaluation_summary()
 
     @app.get("/demo/evaluations/results", response_model=EvaluationResultsResponse)
-    def demo_evaluations_results() -> EvaluationResultsResponse:
-        return app.state.demo_service.get_evaluation_results()
+    def demo_evaluations_results(corpus_id: str | None = None) -> EvaluationResultsResponse:
+        return app.state.demo_service.get_evaluation_results(corpus_id=corpus_id)
 
     @app.get("/demo/evaluations/frustrated", response_model=FrustratedInteractionsResponse)
-    def demo_evaluations_frustrated() -> FrustratedInteractionsResponse:
-        return app.state.demo_service.get_frustrated_interactions()
+    def demo_evaluations_frustrated(corpus_id: str | None = None) -> FrustratedInteractionsResponse:
+        return app.state.demo_service.get_frustrated_interactions(corpus_id=corpus_id)
 
     @app.get("/demo/architecture", response_model=ArchitectureContent)
     def demo_architecture() -> ArchitectureContent:
