@@ -10,4 +10,5 @@ build/
 .DS_Store
 .pytest_cache/
 node_modules/
-docs/slides-src/.svelte-kit/
+frontend/.svelte-kit/
+presentation/slides-src/.svelte-kit/

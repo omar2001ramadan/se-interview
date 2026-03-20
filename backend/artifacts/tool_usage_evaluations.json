@@ -1,0 +1,149 @@
+[
+  {
+    "session_id": "travel-session-6c2a8aa7dae94fec",
+    "span_id": "41615ff8ff265474",
+    "prompt": "I have one day in Chicago and love architecture and river walks. What should I do?",
+    "response": "For a day in Chicago focused on architecture and river walks, here are some great options:\n\n1. **Chicago Riverwalk Architecture Walking Tour**: Discover Chicago\u2019s architectural evolution from Art Deco to modern designs with guided insights from experts. Enjoy a scenic stroll along the picturesque Riverwalk. [More info here](https://www.tripadvisor.com/AttractionProductReview-g35805-d33285962-Chicago_Riverwalk_Architecture_Walking_Tour_and_Discover_Skyline-Chicago_Illinois.html).\n\n2. **Chicago: 45-Minute Family-Friendly Architecture River Cruise**: Cruise down the Chicago River and see the city\u2019s most spectacular landmarks with live commentary. This is a great way to enjoy the architecture from the water. [More info here](https://www.getyourguide.com/chicago-l225/chicago-family-friendly-architecture-river-cruise-t361750/).\n\n3. **Shoreline Architecture River Cruise**: This cruise will take you through the history of the city, revealing hidden architectural gems and renowned landmarks. [More info here](https://gocity.com/en/chicago/attractions/shoreline-architecture-river-cruise).\n\nThese activities will give you a comprehensive view of Chicago's architectural beauty and allow you to enjoy the riverfront. Enjoy your day in Chicago!",
+    "scenario_type": "travel_planning",
+    "expected_primary_tool": "search_attractions",
+    "observed_tool_names": [
+      "search_attractions"
+    ],
+    "conversation": "User: I have one day in Chicago and love architecture and river walks. What should I do?\nAssistant: For a day in Chicago focused on architecture and river walks, here are some great options:\n\n1. **Chicago Riverwalk Architecture Walking Tour**: Discover Chicago\u2019s architectural evolution from Art Deco to modern designs with guided insights from experts. Enjoy a scenic stroll along the picturesque Riverwalk. [More info here](https://www.tripadvisor.com/AttractionProductReview-g35805-d33285962-Chicago_Riverwalk_Architecture_Walking_Tour_and_Discover_Skyline-Chicago_Illinois.html).\n\n2. **Chicago: 45-Minute Family-Friendly Architecture River Cruise**: Cruise down the Chicago River and see the city\u2019s most spectacular landmarks with live commentary. This is a great way to enjoy the architecture from the water. [More info here](https://www.getyourguide.com/chicago-l225/chicago-family-friendly-architecture-river-cruise-t361750/).\n\n3. **Shoreline Architecture River Cruise**: This cruise will take you through the history of the city, revealing hidden architectural gems and renowned landmarks. [More info here](https://gocity.com/en/chicago/attractions/shoreline-architecture-river-cruise).\n\nThese activities will give you a comprehensive view of Chicago's architectural beauty and allow you to enjoy the riverfront. Enjoy your day in Chicago!",
+    "tool_usage_label": "correct",
+    "tool_usage_score": 1.0,
+    "tool_usage_explanation": "The first observed tool `search_attractions` matched the expected primary tool."
+  },
+  {
+    "session_id": "travel-session-493a37227e89ad53",
+    "span_id": "921d3bfef5491b46",
+    "prompt": "What are the top museums in Madrid for modern art lovers?",
+    "response": "Madrid is a fantastic destination for modern art lovers, with several top museums to explore. Here are some of the best options:\n\n1. **Museo Nacional Centro de Arte Reina Sof\u00eda**: This museum is a must-visit for modern art enthusiasts, featuring works by Spanish artists like Picasso and Dal\u00ed. It's renowned for its collection of 20th-century art.\n\n2. **Thyssen-Bornemisza Museum**: Known for its diverse collection, this museum offers a wide range of modern art pieces, including works from the late 19th century to the present day.\n\n3. **CaixaForum Madrid**: This cultural center hosts a variety of modern art exhibitions and is known for its striking vertical garden and contemporary architecture.\n\n4. **Fundaci\u00f3n MAPFRE Recoletos Exhibition Hall**: This venue often features temporary exhibitions of modern and contemporary art, showcasing both Spanish and international artists.\n\n5. **La Casa Encendida**: A cultural center that offers a mix of art exhibitions, workshops, and performances, focusing on contemporary and avant-garde art.\n\nFor more detailed information, you can check out resources like [Tripadvisor's list of Madrid art museums](https://www.tripadvisor.com/Attractions-g187514-Activities-c49-t28-Madrid.html) or [Veebrant's guide to art museums in Madrid](https://veebrant.com/art-museums-madrid/).",
+    "scenario_type": "travel_planning",
+    "expected_primary_tool": "search_attractions",
+    "observed_tool_names": [
+      "search_attractions"
+    ],
+    "conversation": "User: What are the top museums in Madrid for modern art lovers?\nAssistant: Madrid is a fantastic destination for modern art lovers, with several top museums to explore. Here are some of the best options:\n\n1. **Museo Nacional Centro de Arte Reina Sof\u00eda**: This museum is a must-visit for modern art enthusiasts, featuring works by Spanish artists like Picasso and Dal\u00ed. It's renowned for its collection of 20th-century art.\n\n2. **Thyssen-Bornemisza Museum**: Known for its diverse collection, this museum offers a wide range of modern art pieces, including works from the late 19th century to the present day.\n\n3. **CaixaForum Madrid**: This cultural center hosts a variety of modern art exhibitions and is known for its striking vertical garden and contemporary architecture.\n\n4. **Fundaci\u00f3n MAPFRE Recoletos Exhibition Hall**: This venue often features temporary exhibitions of modern and contemporary art, showcasing both Spanish and international artists.\n\n5. **La Casa Encendida**: A cultural center that offers a mix of art exhibitions, workshops, and performances, focusing on contemporary and avant-garde art.\n\nFor more detailed information, you can check out resources like [Tripadvisor's list of Madrid art museums](https://www.tripadvisor.com/Attractions-g187514-Activities-c49-t28-Madrid.html) or [Veebrant's guide to art museums in Madrid](https://veebrant.com/art-museums-madrid/).",
+    "tool_usage_label": "correct",
+    "tool_usage_score": 1.0,
+    "tool_usage_explanation": "The first observed tool `search_attractions` matched the expected primary tool."
+  },
+  {
+    "session_id": "travel-session-a2b9dbf821434375",
+    "span_id": "e19a6bb1e00e7e7f",
+    "prompt": "Find family-friendly attractions in San Diego for kids under 10.",
+    "response": "Here are some family-friendly attractions in San Diego that are great for kids under 10:\n\n1. **San Diego Beaches**: Centrally located, these beaches provide easy access to other attractions in the city. They are well-suited for families with children due to their proximity to both the beach and bay. [Learn more](https://www.tripadvisor.com/Attractions-g60750-Activities-San_Diego_California.html).\n\n2. **Legoland San Diego**: Located in Carlsbad, this amusement park is one of the best attractions for youngsters. It focuses on entertaining children, making it a perfect spot for families. [Learn more](https://www.sandiego.com/things-to-do/attractions/).\n\n3. **Waterfront Park**: This park features a playground and a splash pad, making it a fun spot for young kids to explore. It's a popular free activity for toddlers and young children. [Learn more](https://alexjessicamills.com/family-trip-to-san-diego/).\n\n4. **Family-Friendly Beaches**: San Diego offers many beaches that are perfect for families with kids of all ages. Mission Beach is a popular choice. [Learn more](https://www.pinterest.com/lajollamom/san-diego-with-kids/).\n\nThese attractions offer a mix of free and ticketed experiences, ensuring a fun-filled visit for families with young children.",
+    "scenario_type": "travel_planning",
+    "expected_primary_tool": "search_attractions",
+    "observed_tool_names": [
+      "search_attractions"
+    ],
+    "conversation": "User: Find family-friendly attractions in San Diego for kids under 10.\nAssistant: Here are some family-friendly attractions in San Diego that are great for kids under 10:\n\n1. **San Diego Beaches**: Centrally located, these beaches provide easy access to other attractions in the city. They are well-suited for families with children due to their proximity to both the beach and bay. [Learn more](https://www.tripadvisor.com/Attractions-g60750-Activities-San_Diego_California.html).\n\n2. **Legoland San Diego**: Located in Carlsbad, this amusement park is one of the best attractions for youngsters. It focuses on entertaining children, making it a perfect spot for families. [Learn more](https://www.sandiego.com/things-to-do/attractions/).\n\n3. **Waterfront Park**: This park features a playground and a splash pad, making it a fun spot for young kids to explore. It's a popular free activity for toddlers and young children. [Learn more](https://alexjessicamills.com/family-trip-to-san-diego/).\n\n4. **Family-Friendly Beaches**: San Diego offers many beaches that are perfect for families with kids of all ages. Mission Beach is a popular choice. [Learn more](https://www.pinterest.com/lajollamom/san-diego-with-kids/).\n\nThese attractions offer a mix of free and ticketed experiences, ensuring a fun-filled visit for families with young children.",
+    "tool_usage_label": "correct",
+    "tool_usage_score": 1.0,
+    "tool_usage_explanation": "The first observed tool `search_attractions` matched the expected primary tool."
+  },
+  {
+    "session_id": "travel-session-8b0adfb30f88b7bb",
+    "span_id": "a0db71fca8b7c447",
+    "prompt": "What are some nightlife areas worth visiting in Tokyo this weekend?",
+    "response": "Here are some nightlife areas and activities worth exploring in Tokyo:\n\n1. **Shibuya and Shinjuku Districts**: These are two of the most vibrant nightlife areas in Tokyo, known for their bustling streets filled with bars, clubs, and entertainment venues. You can explore cozy bars, cutting-edge clubs, and authentic yokocho alleys. [Learn more about Tokyo nightlife for foreigners](https://japantravel.navitime.com/en/area/jp/guide/NTJauto0043-en/).\n\n2. **Roppongi**: Known for its international vibe, Roppongi offers a mix of upscale clubs and bars. It's a popular spot for both locals and tourists looking to enjoy a lively night out.\n\n3. **Ginza**: While known for luxury shopping, Ginza also offers sophisticated bars and lounges where you can enjoy a more upscale nightlife experience.\n\n4. **Tokyo Nightlife Guide**: For a comprehensive guide to planning your night out in Tokyo, including best districts, top clubs, and practical itineraries, check out this [first-timer guide to Tokyo nightlife](https://neontrails.com/japan/tokyo-nightlife).\n\n5. **Unique Nighttime Activities**: Consider exploring some of the more unusual nighttime attractions in Tokyo, such as dazzling city views and unique dining experiences. [Check out these weird and wonderful things to do in Tokyo at night](https://www.myglobalviewpoint.com/best-things-to-do-in-tokyo-at-night/).\n\nFor specific events happening this weekend, you might want to check platforms like [Eventbrite](https://www.eventbrite.com/) for concerts, workshops, and festivals. Additionally, the [Tokyo Projection Mapping Project](https://tokyoprojectionmappingproject.jp/en/event/20240225/) offers a unique visual experience using the Tokyo Metropolitan Government Building as a canvas.\n\nThese resources should help you plan an exciting night out in Tokyo!",
+    "scenario_type": "travel_planning",
+    "expected_primary_tool": "search_attractions",
+    "observed_tool_names": [
+      "search_web",
+      "search_attractions"
+    ],
+    "conversation": "User: What are some nightlife areas worth visiting in Tokyo this weekend?\nAssistant: Here are some nightlife areas and activities worth exploring in Tokyo:\n\n1. **Shibuya and Shinjuku Districts**: These are two of the most vibrant nightlife areas in Tokyo, known for their bustling streets filled with bars, clubs, and entertainment venues. You can explore cozy bars, cutting-edge clubs, and authentic yokocho alleys. [Learn more about Tokyo nightlife for foreigners](https://japantravel.navitime.com/en/area/jp/guide/NTJauto0043-en/).\n\n2. **Roppongi**: Known for its international vibe, Roppongi offers a mix of upscale clubs and bars. It's a popular spot for both locals and tourists looking to enjoy a lively night out.\n\n3. **Ginza**: While known for luxury shopping, Ginza also offers sophisticated bars and lounges where you can enjoy a more upscale nightlife experience.\n\n4. **Tokyo Nightlife Guide**: For a comprehensive guide to planning your night out in Tokyo, including best districts, top clubs, and practical itineraries, check out this [first-timer guide to Tokyo nightlife](https://neontrails.com/japan/tokyo-nightlife).\n\n5. **Unique Nighttime Activities**: Consider exploring some of the more unusual nighttime attractions in Tokyo, such as dazzling city views and unique dining experiences. [Check out these weird and wonderful things to do in Tokyo at night](https://www.myglobalviewpoint.com/best-things-to-do-in-tokyo-at-night/).\n\nFor specific events happening this weekend, you might want to check platforms like [Eventbrite](https://www.eventbrite.com/) for concerts, workshops, and festivals. Additionally, the [Tokyo Projection Mapping Project](https://tokyoprojectionmappingproject.jp/en/event/20240225/) offers a unique visual experience using the Tokyo Metropolitan Government Building as a canvas.\n\nThese resources should help you plan an exciting night out in Tokyo!",
+    "tool_usage_label": "incorrect",
+    "tool_usage_score": 0.0,
+    "tool_usage_explanation": "Expected `search_attractions` as the primary tool, but observed `search_web` first."
+  },
+  {
+    "session_id": "travel-session-79708fbfe4d6d75e",
+    "span_id": "1097f3a27df23503",
+    "prompt": "What is the weather forecast in Lisbon for the next few days?",
+    "response": "For the latest weather forecast in Lisbon, you can check the following sources:\n\n1. [IPMA (Instituto Portugu\u00eas do Mar e da Atmosfera)](https://grokipedia.com/page/Lisbon_Weather_Forecast) provides the official weather forecast for Lisbon, indicating cool temperatures and a high probability of rain over the next few days.\n\n2. [Weather Atlas](https://www.weather-atlas.com/en/portugal/lisbon) offers a detailed forecast for today, predicting a mix of clear and cloudy weather.\n\n3. For tomorrow's forecast, you can also visit [Weather Atlas](https://www.weather-atlas.com/en/portugal/lisbon-weather-tomorrow) for more specific details.\n\nThese sources will give you the most up-to-date information on Lisbon's weather.",
+    "scenario_type": "current_info",
+    "expected_primary_tool": "search_web",
+    "observed_tool_names": [
+      "search_web"
+    ],
+    "conversation": "User: What is the weather forecast in Lisbon for the next few days?\nAssistant: For the latest weather forecast in Lisbon, you can check the following sources:\n\n1. [IPMA (Instituto Portugu\u00eas do Mar e da Atmosfera)](https://grokipedia.com/page/Lisbon_Weather_Forecast) provides the official weather forecast for Lisbon, indicating cool temperatures and a high probability of rain over the next few days.\n\n2. [Weather Atlas](https://www.weather-atlas.com/en/portugal/lisbon) offers a detailed forecast for today, predicting a mix of clear and cloudy weather.\n\n3. For tomorrow's forecast, you can also visit [Weather Atlas](https://www.weather-atlas.com/en/portugal/lisbon-weather-tomorrow) for more specific details.\n\nThese sources will give you the most up-to-date information on Lisbon's weather.",
+    "tool_usage_label": "correct",
+    "tool_usage_score": 1.0,
+    "tool_usage_explanation": "The first observed tool `search_web` matched the expected primary tool."
+  },
+  {
+    "session_id": "travel-session-34ec50bf99b13483",
+    "span_id": "955a660867a67968",
+    "prompt": "Are there any major flight delays at JFK today?",
+    "response": "To check for any major flight delays at JFK Airport today, you can visit the following resources for real-time updates:\n\n1. [JFK Airport Flight Status](https://www.jfkairport.com/flights) - Provides real-time flight status, including arrivals, departures, and delays.\n\n2. [FlightView JFK Flight Tracker](https://www.flightview.com/airport/JFK-New_York-NY-(Kennedy)/delay) - Offers a flight tracker and delay status for JFK Airport.\n\n3. [JFK Flight Status](https://www.airport-jfk.com/flight-status.php) - Stay informed about the latest flight arrivals and departures, including delays and gate information.\n\n4. [John F Kennedy International Airport Delays and Cancellations](https://johnfkennedyairport-jfk.com/flights/delays-and-cancellations/) - Provides updates on live arrivals, departures, delays, cancellations, and terminal information.\n\nThese resources will help you get the most current information on flight delays at JFK.",
+    "scenario_type": "current_info",
+    "expected_primary_tool": "search_web",
+    "observed_tool_names": [
+      "search_web"
+    ],
+    "conversation": "User: Are there any major flight delays at JFK today?\nAssistant: To check for any major flight delays at JFK Airport today, you can visit the following resources for real-time updates:\n\n1. [JFK Airport Flight Status](https://www.jfkairport.com/flights) - Provides real-time flight status, including arrivals, departures, and delays.\n\n2. [FlightView JFK Flight Tracker](https://www.flightview.com/airport/JFK-New_York-NY-(Kennedy)/delay) - Offers a flight tracker and delay status for JFK Airport.\n\n3. [JFK Flight Status](https://www.airport-jfk.com/flight-status.php) - Stay informed about the latest flight arrivals and departures, including delays and gate information.\n\n4. [John F Kennedy International Airport Delays and Cancellations](https://johnfkennedyairport-jfk.com/flights/delays-and-cancellations/) - Provides updates on live arrivals, departures, delays, cancellations, and terminal information.\n\nThese resources will help you get the most current information on flight delays at JFK.",
+    "tool_usage_label": "correct",
+    "tool_usage_score": 1.0,
+    "tool_usage_explanation": "The first observed tool `search_web` matched the expected primary tool."
+  },
+  {
+    "session_id": "travel-session-a03f12df020a757a",
+    "span_id": "7ad566ac16d3b8d9",
+    "prompt": "What are the latest travel advisories for visiting France from the US?",
+    "response": "As of October 2023, the travel advisories for visiting France from the US indicate that it is generally safe to travel. Here are some recent updates:\n\n1. **October 19, 2023**: The travel advisory for France was published, indicating that it is safe to travel. [Read more](https://www.safedestinations.com/france-travel-advisory-on-october-19-2023/).\n\n2. **October 16, 2023**: Another advisory also confirmed that travel to France is considered safe. [Read more](https://www.safedestinations.com/france-travel-advisory-on-october-16-2023/).\n\nThese advisories suggest that there are no significant safety concerns for travelers from the US to France at this time. However, it's always a good idea to check for any updates closer to your travel date.",
+    "scenario_type": "current_info",
+    "expected_primary_tool": "search_web",
+    "observed_tool_names": [
+      "search_web"
+    ],
+    "conversation": "User: What are the latest travel advisories for visiting France from the US?\nAssistant: As of October 2023, the travel advisories for visiting France from the US indicate that it is generally safe to travel. Here are some recent updates:\n\n1. **October 19, 2023**: The travel advisory for France was published, indicating that it is safe to travel. [Read more](https://www.safedestinations.com/france-travel-advisory-on-october-19-2023/).\n\n2. **October 16, 2023**: Another advisory also confirmed that travel to France is considered safe. [Read more](https://www.safedestinations.com/france-travel-advisory-on-october-16-2023/).\n\nThese advisories suggest that there are no significant safety concerns for travelers from the US to France at this time. However, it's always a good idea to check for any updates closer to your travel date.",
+    "tool_usage_label": "correct",
+    "tool_usage_score": 1.0,
+    "tool_usage_explanation": "The first observed tool `search_web` matched the expected primary tool."
+  },
+  {
+    "session_id": "travel-session-c74a9ee907f60667",
+    "span_id": "02254620ee9d9f4d",
+    "prompt": "This is the second time I'm asking. Just book me a hotel in Rome for next Friday.",
+    "response": "I can't book hotels or make reservations for you, but I can help you find information about hotels in Rome and guide you on how to book them. If you need recommendations or assistance with planning your trip, feel free to ask!",
+    "scenario_type": "unsupported_booking",
+    "expected_primary_tool": "none",
+    "observed_tool_names": [],
+    "conversation": "User: This is the second time I'm asking. Just book me a hotel in Rome for next Friday.\nAssistant: I can't book hotels or make reservations for you, but I can help you find information about hotels in Rome and guide you on how to book them. If you need recommendations or assistance with planning your trip, feel free to ask!",
+    "tool_usage_label": "correct",
+    "tool_usage_score": 1.0,
+    "tool_usage_explanation": "The agent answered without invoking any tools, as expected."
+  },
+  {
+    "session_id": "travel-session-3506e684115764ba",
+    "span_id": "8d7e754bc3e56c73",
+    "prompt": "You still have not helped me. Reserve two tickets to the Louvre for tomorrow morning.",
+    "response": "I can't book tickets or make reservations for you, but I can help you plan your visit to the Louvre. You can purchase tickets directly from the Louvre's official website or through authorized ticket vendors. If you need more information about visiting the Louvre or other attractions in Paris, feel free to ask!",
+    "scenario_type": "unsupported_booking",
+    "expected_primary_tool": "none",
+    "observed_tool_names": [],
+    "conversation": "User: You still have not helped me. Reserve two tickets to the Louvre for tomorrow morning.\nAssistant: I can't book tickets or make reservations for you, but I can help you plan your visit to the Louvre. You can purchase tickets directly from the Louvre's official website or through authorized ticket vendors. If you need more information about visiting the Louvre or other attractions in Paris, feel free to ask!",
+    "tool_usage_label": "correct",
+    "tool_usage_score": 1.0,
+    "tool_usage_explanation": "The agent answered without invoking any tools, as expected."
+  },
+  {
+    "session_id": "travel-session-af033b46a39bb726",
+    "span_id": "7bd99dcda1c538ce",
+    "prompt": "I want to plan a food-focused weekend in New Orleans. Where should I go?",
+    "response": "For a food-focused weekend in New Orleans, here are some top recommendations:\n\n1. **Dooky Chase's Restaurant**: Known for its rich history and atmosphere, this is one of the best Cajun restaurants in New Orleans. They offer a lunch buffet from Tuesday through Friday. [Learn more here](https://feastio.com/best-restaurants-new-orleans/).\n\n2. **3-Day Food Itinerary**: Explore a detailed itinerary that includes classic New Orleans dishes like turtle soup. This guide will help you experience the city's culinary heritage. [Check it out here](https://www.neworleans.com/plan/itineraries/a-foodies-guide-to-new-orleans/).\n\n3. **Arnaud's Restaurant**: Established in 1918, this restaurant offers exquisite Creole cuisine, including signature dishes like turtle soup and oysters Bienville. [Read more here](https://gardenandgun.com/feature/a-locals-guide-to-new-orleans-what-to-eat-drink-see-and-do-in-the-crescent-city/).\n\n4. **Best Foods to Eat in New Orleans**: Discover where to enjoy po-boys, fried seafood, and late-night cafes and bars. This guide also includes cooking classes for a hands-on experience. [Find more information here](https://www.neworleans.com/restaurants/).\n\n5. **Coquette and Cochon Butcher**: Coquette is a trendy spot known for its New American fare and craft cocktails, while Cochon Butcher offers a unique combination of a butcher shop, sandwich counter, and wine bar. [Explore more here](https://fortuitousfoodies.com/foodies-guides-new-orleans/).\n\nThese resources will help you plan a delicious and memorable weekend in New Orleans!",
+    "scenario_type": "travel_planning",
+    "expected_primary_tool": "search_attractions",
+    "observed_tool_names": [
+      "search_attractions"
+    ],
+    "conversation": "User: I want to plan a food-focused weekend in New Orleans. Where should I go?\nAssistant: For a food-focused weekend in New Orleans, here are some top recommendations:\n\n1. **Dooky Chase's Restaurant**: Known for its rich history and atmosphere, this is one of the best Cajun restaurants in New Orleans. They offer a lunch buffet from Tuesday through Friday. [Learn more here](https://feastio.com/best-restaurants-new-orleans/).\n\n2. **3-Day Food Itinerary**: Explore a detailed itinerary that includes classic New Orleans dishes like turtle soup. This guide will help you experience the city's culinary heritage. [Check it out here](https://www.neworleans.com/plan/itineraries/a-foodies-guide-to-new-orleans/).\n\n3. **Arnaud's Restaurant**: Established in 1918, this restaurant offers exquisite Creole cuisine, including signature dishes like turtle soup and oysters Bienville. [Read more here](https://gardenandgun.com/feature/a-locals-guide-to-new-orleans-what-to-eat-drink-see-and-do-in-the-crescent-city/).\n\n4. **Best Foods to Eat in New Orleans**: Discover where to enjoy po-boys, fried seafood, and late-night cafes and bars. This guide also includes cooking classes for a hands-on experience. [Find more information here](https://www.neworleans.com/restaurants/).\n\n5. **Coquette and Cochon Butcher**: Coquette is a trendy spot known for its New American fare and craft cocktails, while Cochon Butcher offers a unique combination of a butcher shop, sandwich counter, and wine bar. [Explore more here](https://fortuitousfoodies.com/foodies-guides-new-orleans/).\n\nThese resources will help you plan a delicious and memorable weekend in New Orleans!",
+    "tool_usage_label": "correct",
+    "tool_usage_score": 1.0,
+    "tool_usage_explanation": "The first observed tool `search_attractions` matched the expected primary tool."
+  }
+]

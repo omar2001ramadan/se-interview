@@ -1,0 +1,22 @@
+[
+  {
+    "session_id": "travel-session-c74a9ee907f60667",
+    "span_id": "02254620ee9d9f4d",
+    "prompt": "This is the second time I'm asking. Just book me a hotel in Rome for next Friday.",
+    "response": "I can't book hotels or make reservations for you, but I can help you find information about hotels in Rome and guide you on how to book them. If you need recommendations or assistance with planning your trip, feel free to ask!",
+    "scenario_type": "unsupported_booking",
+    "label": "frustrated",
+    "score": 0.0,
+    "explanation": "The user explicitly stated that this was the second time they were asking for a hotel booking, which indicates a level of frustration with having to repeat their request. The assistant's response did not fulfill the user's request for a hotel booking, instead offering to provide information and guidance. This lack of resolution likely contributed to the user's frustration, as they were seeking a direct action (booking a hotel) rather than advice. The user's tone suggests they were not satisfied with the assistant's inability to help with their specific request, leading to a feeling of frustration."
+  },
+  {
+    "session_id": "travel-session-3506e684115764ba",
+    "span_id": "8d7e754bc3e56c73",
+    "prompt": "You still have not helped me. Reserve two tickets to the Louvre for tomorrow morning.",
+    "response": "I can't book tickets or make reservations for you, but I can help you plan your visit to the Louvre. You can purchase tickets directly from the Louvre's official website or through authorized ticket vendors. If you need more information about visiting the Louvre or other attractions in Paris, feel free to ask!",
+    "scenario_type": "unsupported_booking",
+    "label": "frustrated",
+    "score": 0.0,
+    "explanation": "The user explicitly states that they have not been helped, indicating a level of frustration with the assistant's inability to fulfill their request for ticket reservations. The assistant's response does not address the user's request directly and instead offers alternative suggestions, which may not satisfy the user's immediate need. The user's initial request and the assistant's response suggest a disconnect, leading to the user's likely frustration with the situation."
+  }
+]
