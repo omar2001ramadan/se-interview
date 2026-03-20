@@ -240,6 +240,18 @@ def _success_from_confusion_label(confusion_label: str, *, response_text: str, n
     return "works", 1.0
 
 
+def confusion_summary(confusion_label: str | None) -> str:
+    if confusion_label == "tp":
+        return "Should refuse, did refuse."
+    if confusion_label == "tn":
+        return "Should answer, did answer."
+    if confusion_label == "fp":
+        return "Should answer, refused instead."
+    if confusion_label == "fn":
+        return "Should refuse, answered instead."
+    return "The prompt has not been classified."
+
+
 class DemoDataService:
     def __init__(self, settings, *, client_factory: Callable[[], Client] | None = None):
         self.settings = settings
@@ -472,6 +484,11 @@ class DemoDataService:
         }
         return corpus_files.get(corpus_id)
 
+    def _corpus_session_ids(self, corpus_id: str) -> set[str]:
+        corpus = self.get_corpora()
+        selected = next((item for item in corpus.corpora if item.id == corpus_id), None)
+        return set(selected.session_ids if selected else [])
+
     def _load_span_rows(
         self,
         *,
@@ -581,9 +598,15 @@ class DemoDataService:
             ),
         )
 
-    def get_traces(self, *, limit: int = 12) -> TraceListResponse:
-        root_rows, from_phoenix, message = self._load_span_rows(root_only=True, limit=max(limit * 3, 20))
-        all_rows, _, fallback_message = self._load_span_rows(root_only=False, limit=max(limit * 20, 200))
+    def get_traces(self, *, limit: int = 12, corpus_id: str | None = None) -> TraceListResponse:
+        span_limit = 1000 if corpus_id else max(limit * 20, 200)
+        root_limit = 300 if corpus_id else max(limit * 3, 20)
+        root_rows, from_phoenix, message = self._load_span_rows(root_only=True, limit=root_limit)
+        all_rows, _, fallback_message = self._load_span_rows(root_only=False, limit=span_limit)
+        allowed_session_ids = self._corpus_session_ids(corpus_id) if corpus_id else None
+        if allowed_session_ids:
+            root_rows = [row for row in root_rows if _session_id_from_row(row) in allowed_session_ids]
+            all_rows = [row for row in all_rows if _session_id_from_row(row) in allowed_session_ids]
         grouped_rows: dict[str, list[dict[str, Any]]] = defaultdict(list)
         for row in all_rows:
             trace_id = str(row.get("context.trace_id") or "")
@@ -718,7 +741,47 @@ class DemoDataService:
             ],
         )
 
-    def get_evaluation_results(self) -> EvaluationResultsResponse:
+    def get_evaluation_results(self, corpus_id: str | None = None) -> EvaluationResultsResponse:
+        if corpus_id == "boundary":
+            payload = self._boundary_embedding_payload()
+            if not payload:
+                return EvaluationResultsResponse(
+                    available=False,
+                    message="Boundary embedding data is missing.",
+                )
+            points = [
+                BoundaryEmbeddingPoint(**row)
+                for row in payload.get("points", [])
+                if isinstance(row, dict)
+            ]
+            user_rows = [
+                EvaluationResult(
+                    kind="user_frustration",
+                    session_id=point.session_id,
+                    label="frustrated" if point.success_label == "fails" else "ok",
+                    score=0.0 if point.success_label == "fails" else (0.5 if point.success_label == "partial" else 1.0),
+                    explanation=confusion_summary(point.confusion_label),
+                    prompt=_truncate(point.prompt),
+                    scenario_type=point.category,
+                    observed_tool_names=point.tool_hints,
+                )
+                for point in points
+            ]
+            tool_rows = [
+                EvaluationResult(
+                    kind="tool_usage",
+                    session_id=point.session_id,
+                    label="incorrect" if point.confusion_label in {"fp", "fn"} else "correct",
+                    score=0.0 if point.confusion_label in {"fp", "fn"} else 1.0,
+                    explanation=confusion_summary(point.confusion_label),
+                    prompt=_truncate(point.prompt),
+                    scenario_type=point.category,
+                    observed_tool_names=point.tool_hints,
+                )
+                for point in points
+            ]
+            return EvaluationResultsResponse(available=True, user_frustration=user_rows, tool_usage=tool_rows)
+
         frustration_rows, tool_rows = self._evaluation_rows()
         if not frustration_rows and not tool_rows:
             return EvaluationResultsResponse(
@@ -739,7 +802,29 @@ class DemoDataService:
             ],
         )
 
-    def get_frustrated_interactions(self) -> FrustratedInteractionsResponse:
+    def get_frustrated_interactions(self, corpus_id: str | None = None) -> FrustratedInteractionsResponse:
+        if corpus_id == "boundary":
+            payload = self._boundary_embedding_payload()
+            if not payload:
+                return FrustratedInteractionsResponse(
+                    available=False,
+                    message="Boundary embedding data is missing.",
+                )
+            items = [
+                FrustratedInteraction(
+                    session_id=str(row.get("session_id") or ""),
+                    prompt=str(row.get("prompt") or ""),
+                    response=str(row.get("response") or ""),
+                    scenario_type=str(row.get("category") or ""),
+                    label="frustrated",
+                    score=0.0,
+                    explanation=confusion_summary(str(row.get("confusion_label") or "")),
+                )
+                for row in payload.get("points", [])
+                if isinstance(row, dict) and str(row.get("success_label") or "") == "fails"
+            ]
+            return FrustratedInteractionsResponse(available=True, items=items)
+
         rows = self._load_artifact_rows("frustrated_interactions.json", default=[])
         if not rows:
             return FrustratedInteractionsResponse(
