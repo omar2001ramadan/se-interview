@@ -213,7 +213,12 @@
     }[];
   };
 
-  const API_BASE_URL = (import.meta.env.PUBLIC_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
+  const runtimeApiBaseUrl = browser ? window.__APP_CONFIG__?.PUBLIC_API_BASE_URL : undefined;
+  const API_BASE_URL = (
+    runtimeApiBaseUrl ||
+    import.meta.env.PUBLIC_API_BASE_URL ||
+    "http://localhost:8000"
+  ).replace(/\/$/, "");
   const STORAGE_KEY = "travel-assistant-chat";
   const tabs: { id: DemoTab; label: string }[] = [
     { id: "chat", label: "Chat" },
