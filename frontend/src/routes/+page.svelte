@@ -148,22 +148,11 @@
     items: FrustratedInteraction[];
   };
 
-  type ArchitectureContent = {
-    available: boolean;
-    message?: string | null;
-    mermaid_diagram?: string | null;
-    runtime_flow: string[];
-    observability_flow: string[];
-    evaluation_flow: string[];
-    production_tradeoffs: string[];
-    deck_url?: string | null;
-    deck_path?: string | null;
-  };
-
   type BoundaryEmbeddingPoint = {
     id: number;
     prompt: string;
     category: string;
+    corpus_id?: string;
     expected_behavior: string;
     response: string;
     session_id: string;
@@ -223,9 +212,6 @@
     }[];
   };
 
-  type DiagramNode = { id: string; label: string };
-  type DiagramEdge = { from: string; to: string; label: string };
-
   const API_BASE_URL = (import.meta.env.PUBLIC_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
   const STORAGE_KEY = "travel-assistant-chat";
   const tabs: { id: DemoTab; label: string }[] = [
@@ -234,7 +220,6 @@
     { id: "traces", label: "Traces" },
     { id: "evaluation", label: "Evaluation" },
     { id: "embeddings", label: "Embeddings" },
-    { id: "architecture", label: "Architecture" },
   ];
 
   let prompt = "";
@@ -260,8 +245,6 @@
   let visibleToolUsage: EvaluationResult[] = [];
   let visibleFrustratedInteractions: FrustratedInteraction[] = [];
   let boundaryData: BoundaryEmbeddingResponse | null = null;
-  let architecture: ArchitectureContent | null = null;
-  let architectureDiagram: { nodes: DiagramNode[]; edges: DiagramEdge[] } = { nodes: [], edges: [] };
   let liveBoundaryPoints: BoundaryEmbeddingPoint[] = [];
   let projectedBoundaryPoints: ProjectedBoundaryPoint[] = [];
   let selectedBoundaryPointId: number | null = null;
@@ -303,7 +286,6 @@
   let tracesLoading = false;
   let evaluationLoading = false;
   let boundaryLoading = false;
-  let architectureLoading = false;
 
   function persistMessages() {
     if (!browser) return;
@@ -418,21 +400,10 @@
     }
   }
 
-  async function loadArchitecture() {
-    architectureLoading = true;
-    try {
-      architecture = await fetchJson<ArchitectureContent>("/demo/architecture");
-    } catch {
-      architecture = null;
-    } finally {
-      architectureLoading = false;
-    }
-  }
-
-  async function loadBoundaries() {
+  async function loadBoundaries(corpusId = selectedCorpusId) {
     boundaryLoading = true;
     try {
-      boundaryData = await fetchJson<BoundaryEmbeddingResponse>("/demo/boundaries");
+      boundaryData = await fetchJson<BoundaryEmbeddingResponse>(`/demo/boundaries?corpus_id=${encodeURIComponent(corpusId)}`);
     } catch {
       boundaryData = null;
     } finally {
@@ -459,6 +430,8 @@
     selectedCorpusId = corpusId;
     corpusDownloadsOpen = false;
     selectedBoundaryCategory = "all";
+    selectedBoundaryPointId = null;
+    void loadBoundaries(corpusId);
   }
 
   function toggleCorpusDownloads() {
@@ -638,6 +611,7 @@
           prompt: promptText,
           response: payload.response,
           session_id: payload.session_id,
+          corpus_id: selectedCorpusId,
           notes: payload.notes,
           tool_hints: payload.tool_hints,
         }),
@@ -736,38 +710,6 @@
     if (tab === "embeddings" && !boundaryData && !boundaryLoading) {
       void loadBoundaries();
     }
-    if (tab === "architecture" && !architecture && !architectureLoading) {
-      void loadArchitecture();
-    }
-  }
-
-  function parseMermaid(diagram?: string | null): { nodes: DiagramNode[]; edges: DiagramEdge[] } {
-    if (!diagram) return { nodes: [], edges: [] };
-    const nodeMap = new Map<string, string>();
-    const edges: DiagramEdge[] = [];
-
-    for (const rawLine of diagram.split("\n")) {
-      const line = rawLine.trim();
-      if (!line || line.startsWith("flowchart")) continue;
-
-      for (const match of line.matchAll(/([a-zA-Z0-9_]+)\["([^"]+)"\]/g)) {
-        nodeMap.set(match[1], match[2]);
-      }
-
-      const edgeMatch = line.match(/([a-zA-Z0-9_]+)\s*-->\s*([a-zA-Z0-9_]+)/);
-      if (edgeMatch) {
-        const from = edgeMatch[1];
-        const to = edgeMatch[2];
-        edges.push({
-          from,
-          to,
-          label: `${nodeMap.get(from) || from} -> ${nodeMap.get(to) || to}`,
-        });
-      }
-    }
-
-    const nodes = Array.from(nodeMap.entries()).map(([id, label]) => ({ id, label }));
-    return { nodes, edges };
   }
 
   function selectedCorpus() {
@@ -782,7 +724,6 @@
     return new Set(selectedCorpus()?.session_ids ?? []);
   }
 
-  $: architectureDiagram = parseMermaid(architecture?.mermaid_diagram);
   $: visiblePromptSuggestions = (selectedCorpus()?.prompts ?? []).slice(0, 3);
   $: visibleTraces = (() => {
     const sessions = selectedCorpusSessionSet();
@@ -800,11 +741,11 @@
     const sessions = selectedCorpusSessionSet();
     return frustratedInteractions.filter((row) => sessions.has(row.session_id));
   })();
-  $: allBoundaryPoints = [...(boundaryData?.points ?? []), ...liveBoundaryPoints];
-  $: corpusScopedBoundaryPoints =
-    selectedCorpusId === "boundary"
-      ? allBoundaryPoints
-      : liveBoundaryPoints.filter((point) => !point.expected_refusal);
+  $: allBoundaryPoints = [
+    ...(boundaryData?.points ?? []),
+    ...liveBoundaryPoints.filter((point) => (point.corpus_id ?? "boundary") === selectedCorpusId),
+  ];
+  $: corpusScopedBoundaryPoints = allBoundaryPoints;
   $: filteredBoundaryPoints =
     selectedBoundaryCategory === "all"
       ? corpusScopedBoundaryPoints
@@ -880,9 +821,13 @@
       const promptMessage = messages[index - 1];
       const promptText = promptMessage?.role === "user" ? promptMessage.content : "Prompt unavailable.";
       const point = liveBoundaryPoints.find((entry) => entry.session_id === message.sessionId) ?? null;
-      if (selectedCorpusId === "boundary" && point && !point.expected_refusal) continue;
-      if (selectedCorpusId === "evaluation" && point?.expected_refusal) continue;
-      if (selectedCorpusId === "evaluation" && promptSet.size > 0 && promptText !== "Prompt unavailable." && !promptSet.has(promptText) && point === null) {
+      if (point && (point.corpus_id ?? "boundary") !== selectedCorpusId) continue;
+      if (
+        promptSet.size > 0 &&
+        promptText !== "Prompt unavailable." &&
+        !promptSet.has(promptText) &&
+        point === null
+      ) {
         continue;
       }
       rows.push({
@@ -932,7 +877,7 @@
 
   onMount(async () => {
     hydrateMessages();
-    await Promise.all([checkHealth(), loadCorpora(), loadOverview(), loadTraces(), loadEvaluation(), loadBoundaries(), loadArchitecture()]);
+    await Promise.all([checkHealth(), loadCorpora(), loadOverview(), loadTraces(), loadEvaluation(), loadBoundaries()]);
   });
 </script>
 
@@ -940,7 +885,7 @@
   <title>Travel Assistant</title>
   <meta
     name="description"
-    content="Travel assistant with chat, Phoenix traces, evaluation results, and architecture context."
+    content="Travel assistant with chat, Phoenix traces, evaluation results, and embedding-space inspection."
   />
 </svelte:head>
 
@@ -1561,82 +1506,6 @@
               <p class="muted">{boundaryData?.message || "Boundary embedding data is not available yet."}</p>
             {/if}
           </article>
-        </section>
-      {:else if $selectedTab === "architecture"}
-        <section class="stack-layout">
-          <article class="panel">
-            <div class="section-header">
-              <h2>Production Architecture</h2>
-              {#if architecture?.deck_url}
-                <a class="action-link" href={architecture.deck_url} target="_blank" rel="noreferrer">Open Presentation</a>
-              {/if}
-            </div>
-
-            {#if architecture?.mermaid_diagram}
-              <div class="diagram-board">
-                <div class="diagram-node-grid">
-                  {#each architectureDiagram.nodes as node}
-                    <article class="diagram-node">{node.label}</article>
-                  {/each}
-                </div>
-                <div class="diagram-edges">
-                  {#each architectureDiagram.edges as edge}
-                    <span>{edge.label}</span>
-                  {/each}
-                </div>
-              </div>
-            {:else}
-              <p class="muted">Architecture diagram content is unavailable.</p>
-            {/if}
-          </article>
-
-          <div class="split-layout">
-            <article class="panel">
-              <div class="section-header">
-                <h2>Runtime Flow</h2>
-              </div>
-              <ul class="bullet-list">
-                {#each architecture?.runtime_flow ?? [] as item}
-                  <li>{item}</li>
-                {/each}
-              </ul>
-            </article>
-
-            <article class="panel">
-              <div class="section-header">
-                <h2>Observability</h2>
-              </div>
-              <ul class="bullet-list">
-                {#each architecture?.observability_flow ?? [] as item}
-                  <li>{item}</li>
-                {/each}
-              </ul>
-            </article>
-          </div>
-
-          <div class="split-layout">
-            <article class="panel">
-              <div class="section-header">
-                <h2>Evaluation Loop</h2>
-              </div>
-              <ul class="bullet-list">
-                {#each architecture?.evaluation_flow ?? [] as item}
-                  <li>{item}</li>
-                {/each}
-              </ul>
-            </article>
-
-            <article class="panel">
-              <div class="section-header">
-                <h2>Operational Tradeoffs</h2>
-              </div>
-              <ul class="bullet-list">
-                {#each architecture?.production_tradeoffs ?? [] as item}
-                  <li>{item}</li>
-                {/each}
-              </ul>
-            </article>
-          </div>
         </section>
       {/if}
     </main>

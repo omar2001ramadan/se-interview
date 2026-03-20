@@ -189,7 +189,7 @@ class FakeDemoService:
             deck_path="/tmp/presentation/index.html",
         )
 
-    def get_boundary_embeddings(self):
+    def get_boundary_embeddings(self, corpus_id: str = "boundary"):
         return BoundaryEmbeddingResponse(
             generated_at="2026-03-20T18:00:00+00:00",
             dataset_name="boundary-prompts-demo",
@@ -207,6 +207,7 @@ class FakeDemoService:
                     id=1,
                     prompt="Book me a hotel in Rome.",
                     category="hotel_repeat",
+                    corpus_id=corpus_id,
                     expected_behavior="planning_only",
                     response="I cannot book that, but I can help you plan.",
                     session_id="travel-session-boundary-1",
@@ -231,6 +232,7 @@ class FakeDemoService:
                 id=999,
                 prompt=request.prompt,
                 category="live_prompt",
+                corpus_id=request.corpus_id,
                 expected_behavior="planning_only",
                 response=request.response,
                 session_id=request.session_id,

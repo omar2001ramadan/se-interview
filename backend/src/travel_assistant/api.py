@@ -242,8 +242,8 @@ def create_app(agent_executor=None, demo_service=None) -> FastAPI:
         return app.state.demo_service.get_architecture_content()
 
     @app.get("/demo/boundaries", response_model=BoundaryEmbeddingResponse)
-    def demo_boundaries() -> BoundaryEmbeddingResponse:
-        return app.state.demo_service.get_boundary_embeddings()
+    def demo_boundaries(corpus_id: str = "boundary") -> BoundaryEmbeddingResponse:
+        return app.state.demo_service.get_boundary_embeddings(corpus_id)
 
     @app.post("/demo/boundaries/project", response_model=BoundaryProjectionResponse)
     def demo_boundary_projection(request: BoundaryProjectionRequest) -> BoundaryProjectionResponse:

@@ -244,6 +244,7 @@ class DemoDataService:
     def __init__(self, settings, *, client_factory: Callable[[], Client] | None = None):
         self.settings = settings
         self._client_factory = client_factory or (lambda: Client(base_url=self.settings.phoenix_base_url))
+        self._embedding_payload_cache: dict[str, dict[str, Any]] = {}
 
     def _client(self) -> Client:
         return self._client_factory()
@@ -253,6 +254,216 @@ class DemoDataService:
 
     def _load_corpus_rows(self, name: str, *, default: Any) -> Any:
         return _read_json(EVALS_DIR / name, default)
+
+    def _embedding_client(self) -> OpenAI | None:
+        if not self.settings.openai_api_key:
+            return None
+        return OpenAI(api_key=self.settings.openai_api_key)
+
+    def _embed_texts(self, texts: list[str], *, model: str = "text-embedding-3-small") -> list[list[float]]:
+        client = self._embedding_client()
+        if client is None:
+            raise RuntimeError("OPENAI_API_KEY is required to calculate embedding spaces.")
+        response = client.embeddings.create(model=model, input=texts)
+        return [list(item.embedding) for item in response.data]
+
+    def _project_embeddings(self, embeddings: list[list[float]]) -> tuple[np.ndarray, list[float], list[list[float]]]:
+        matrix = np.asarray(embeddings, dtype=float)
+        if matrix.ndim != 2 or matrix.shape[0] == 0:
+            raise RuntimeError("Embedding matrix is empty.")
+        mean_vector = matrix.mean(axis=0)
+        centered = matrix - mean_vector
+        _, _, vt = np.linalg.svd(centered, full_matrices=False)
+        component_count = min(3, vt.shape[0])
+        components = vt[:component_count]
+        if component_count < 3:
+            padding = np.zeros((3 - component_count, matrix.shape[1]), dtype=float)
+            components = np.vstack([components, padding])
+        projected = centered @ components.T
+        max_abs = float(np.max(np.abs(projected))) or 1e-9
+        normalized = projected / max_abs
+        return normalized, mean_vector.tolist(), components.tolist()
+
+    def _build_embedding_payload(
+        self,
+        *,
+        corpus_id: str,
+        dataset_name: str,
+        prompts: list[str],
+        points: list[dict[str, Any]],
+        embedding_model: str = "text-embedding-3-small",
+        generated_at: str | None = None,
+    ) -> dict[str, Any]:
+        embeddings = self._embed_texts(prompts, model=embedding_model)
+        projected, mean_vector, components = self._project_embeddings(embeddings)
+        normalized_points: list[dict[str, Any]] = []
+        for index, point in enumerate(points):
+            normalized_points.append(
+                {
+                    **point,
+                    "corpus_id": corpus_id,
+                    "coords": {
+                        "x": round(float(projected[index][0]), 4),
+                        "y": round(float(projected[index][1]), 4),
+                        "z": round(float(projected[index][2]), 4),
+                    },
+                }
+            )
+
+        worked = sum(1 for point in normalized_points if point.get("success_label") == "works")
+        partial = sum(1 for point in normalized_points if point.get("success_label") == "partial")
+        failed = sum(1 for point in normalized_points if point.get("success_label") == "fails")
+
+        category_vectors: dict[str, list[np.ndarray]] = defaultdict(list)
+        for point, embedding in zip(normalized_points, embeddings, strict=False):
+            category_vectors[str(point.get("category") or "unknown")].append(np.asarray(embedding, dtype=float))
+
+        matrix_rows: list[dict[str, Any]] = []
+        category_names = sorted(category_vectors.keys())
+        centroids = {
+            category: np.mean(vectors, axis=0)
+            for category, vectors in category_vectors.items()
+            if vectors
+        }
+        for row_name in category_names:
+            row_values: list[dict[str, Any]] = []
+            row_centroid = centroids[row_name]
+            row_norm = float(np.linalg.norm(row_centroid)) or 1e-9
+            for column_name in category_names:
+                column_centroid = centroids[column_name]
+                column_norm = float(np.linalg.norm(column_centroid)) or 1e-9
+                similarity = float(np.dot(row_centroid, column_centroid) / (row_norm * column_norm))
+                row_values.append({"column": column_name, "similarity": round(similarity, 4)})
+            matrix_rows.append({"row": row_name, "values": row_values})
+
+        return {
+            "generated_at": generated_at or datetime.now().astimezone().isoformat(),
+            "dataset_name": dataset_name,
+            "embedding_model": embedding_model,
+            "dimensions": 3,
+            "summary": {
+                "total_prompts": len(normalized_points),
+                "worked": worked,
+                "partial": partial,
+                "failed": failed,
+                "success_rate": round((worked + 0.5 * partial) / max(len(normalized_points), 1), 4),
+            },
+            "points": normalized_points,
+            "category_similarity_matrix": matrix_rows,
+            "projection_basis": {
+                "mean": mean_vector,
+                "components": components,
+            },
+        }
+
+    def _boundary_embedding_payload(self) -> dict[str, Any]:
+        payload = self._load_artifact_rows("boundary_embedding_space.json", default={})
+        if not payload:
+            return {}
+        points = []
+        for row in payload.get("points", []):
+            if not isinstance(row, dict):
+                continue
+            points.append({**row, "corpus_id": "boundary"})
+        return {**payload, "points": points}
+
+    def _evaluation_embedding_payload(self) -> dict[str, Any]:
+        if "evaluation" in self._embedding_payload_cache:
+            return self._embedding_payload_cache["evaluation"]
+
+        query_runs = self._load_artifact_rows("query_runs.json", default=[])
+        tool_rows, frustration_rows = self._load_artifact_rows("tool_usage_evaluations.json", default=[]), self._load_artifact_rows(
+            "user_frustration_evaluations.json", default=[]
+        )
+        if not query_runs:
+            return {}
+
+        tool_by_session = {
+            str(row.get("session_id")): row
+            for row in tool_rows
+            if isinstance(row, dict) and row.get("session_id")
+        }
+        frustration_by_session = {
+            str(row.get("session_id")): row
+            for row in frustration_rows
+            if isinstance(row, dict) and row.get("session_id")
+        }
+
+        prompts: list[str] = []
+        points: list[dict[str, Any]] = []
+        for index, row in enumerate(query_runs, start=1):
+            if not isinstance(row, dict):
+                continue
+            prompt = str(row.get("prompt") or "").strip()
+            session_id = str(row.get("session_id") or "").strip()
+            if not prompt or not session_id:
+                continue
+            response_text = str(row.get("response") or "")
+            scenario_type = str(row.get("scenario_type") or "unknown")
+            tool_eval = tool_by_session.get(session_id, {})
+            frustration_eval = frustration_by_session.get(session_id, {})
+            notes: list[str] = []
+            if scenario_type == "unsupported_booking":
+                notes.append("planning_only")
+            elif scenario_type == "current_info":
+                notes.append("current_info")
+            else:
+                notes.append("planning")
+
+            expected_refusal = scenario_type == "unsupported_booking" or _expected_refusal(prompt)
+            actual_refusal = _actual_refusal(response_text, notes)
+            confusion_label = _confusion_label(expected_refusal=expected_refusal, actual_refusal=actual_refusal)
+            success_label, success_score = _success_from_confusion_label(
+                confusion_label,
+                response_text=response_text,
+                notes=notes,
+            )
+
+            if str(tool_eval.get("tool_usage_label") or "unknown") == "incorrect":
+                success_label = "partial" if success_label == "works" else success_label
+                success_score = min(success_score, 0.5)
+            if str(frustration_eval.get("label") or "unknown") == "frustrated":
+                success_label = "partial" if success_label == "works" else success_label
+                success_score = min(success_score, 0.5)
+
+            prompts.append(prompt)
+            points.append(
+                {
+                    "id": index,
+                    "prompt": prompt,
+                    "category": scenario_type,
+                    "expected_behavior": "planning_only" if expected_refusal else "normal_response",
+                    "response": response_text,
+                    "session_id": session_id,
+                    "success_label": success_label,
+                    "success_score": success_score,
+                    "tool_hints": [str(item) for item in tool_eval.get("observed_tool_names", []) if item],
+                    "notes": notes,
+                    "source": "corpus",
+                    "expected_refusal": expected_refusal,
+                    "actual_refusal": actual_refusal,
+                    "confusion_label": confusion_label,
+                }
+            )
+
+        if not prompts:
+            return {}
+
+        payload = self._build_embedding_payload(
+            corpus_id="evaluation",
+            dataset_name="evaluation-corpus",
+            prompts=prompts,
+            points=points,
+        )
+        self._embedding_payload_cache["evaluation"] = payload
+        return payload
+
+    def _embedding_payload_for_corpus(self, corpus_id: str) -> dict[str, Any]:
+        if corpus_id == "boundary":
+            return self._boundary_embedding_payload()
+        if corpus_id == "evaluation":
+            return self._evaluation_embedding_payload()
+        return {}
 
     def corpus_file_path(self, corpus_id: str) -> Path | None:
         corpus_files = {
@@ -603,12 +814,16 @@ class DemoDataService:
             deck_path=str(deck_path),
         )
 
-    def get_boundary_embeddings(self) -> BoundaryEmbeddingResponse:
-        payload = self._load_artifact_rows("boundary_embedding_space.json", default={})
+    def get_boundary_embeddings(self, corpus_id: str = "boundary") -> BoundaryEmbeddingResponse:
+        payload = self._embedding_payload_for_corpus(corpus_id)
         if not payload:
             return BoundaryEmbeddingResponse(
                 available=False,
-                message="Run `poetry run python scripts/run_boundary_tests.py` to generate boundary embedding data.",
+                message=(
+                    "Boundary embedding data is missing. Run `poetry run python scripts/run_boundary_tests.py` first."
+                    if corpus_id == "boundary"
+                    else "Evaluation embedding data could not be calculated."
+                ),
             )
 
         return BoundaryEmbeddingResponse(
@@ -641,11 +856,11 @@ class DemoDataService:
         )
 
     def get_boundary_projection(self, request: BoundaryProjectionRequest) -> BoundaryProjectionResponse:
-        payload = self._load_artifact_rows("boundary_embedding_space.json", default={})
+        payload = self._embedding_payload_for_corpus(request.corpus_id)
         if not payload:
             return BoundaryProjectionResponse(
                 available=False,
-                message="Boundary embedding artifact is missing. Run the boundary test script first.",
+                message="Embedding data is missing for the selected corpus.",
             )
 
         projection_basis = payload.get("projection_basis") or {}
@@ -691,6 +906,7 @@ class DemoDataService:
                 id=int(datetime.now().timestamp() * 1000),
                 prompt=request.prompt,
                 category="live_prompt",
+                corpus_id=request.corpus_id,
                 expected_behavior="planning_only" if expected_refusal else "normal_response",
                 response=request.response,
                 session_id=request.session_id,

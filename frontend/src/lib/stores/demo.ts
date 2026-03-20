@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
 
-export type DemoTab = "chat" | "live" | "traces" | "evaluation" | "embeddings" | "architecture";
+export type DemoTab = "chat" | "live" | "traces" | "evaluation" | "embeddings";
 
 export const selectedTab = writable<DemoTab>("chat");
 export const selectedTraceId = writable<string | null>(null);

@@ -170,6 +170,7 @@ class BoundaryEmbeddingPoint(BaseModel):
     id: int
     prompt: str
     category: str
+    corpus_id: str = "boundary"
     expected_behavior: str
     response: str
     session_id: str
@@ -218,6 +219,7 @@ class BoundaryProjectionRequest(BaseModel):
     prompt: str
     response: str
     session_id: str
+    corpus_id: str = "boundary"
     notes: list[str] = Field(default_factory=list)
     tool_hints: list[str] = Field(default_factory=list)
 
